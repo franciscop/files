@@ -63,7 +63,7 @@ const mkdir = name => {
   const realmkdir = promisify(fs.mkdir);
 
   // Make sure it doesn't fail
-  return magic(realmkdir(file)).catch(err => err);
+  return magic(realmkdir(file)).catch(err => {}).then(() => file);
 };
 
 
@@ -81,22 +81,12 @@ const remove = name => magic([abs(name)]).map(async file => {
   if (stats.isDirectory()) {
     const files = await walk(file).map(remove);
     await list(file).map(remove);
-    return promisify(fs.rmdir)(file);
+    await promisify(fs.rmdir)(file);
+    return file;
   }
-  return promisify(fs.unlink)(file);
+  await promisify(fs.unlink)(file);
+  return file;
 })[0];
-
-
-
-// // Read a file's content or a folder's content
-// // Returns a magic object that makes some async operation
-// const read = name => magic([abs(name)]).map(async file => {
-//   const stats = await stat(file);
-//   if (stats.isDirectory()) {
-//     return list(file);
-//   }
-//   return cat(file);
-// })[0];
 
 
 
@@ -143,8 +133,7 @@ module.exports = {
   ls: list,
   mkdir,
   name,
-  // read,
-  readFile: cat,
+  read: cat,
   remove,
   stat,
   walk,

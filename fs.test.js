@@ -9,8 +9,7 @@ import {
   mkdir,
   name,
   remove,
-  // read,
-  readFile,
+  read,
   stat,
   walk,
   write
@@ -93,8 +92,16 @@ describe('mkdir', () => {
 
   it('create a new directory', async () => {
     expect(await exists('demo/b')).toBe(false);
-    await mkdir('demo/b');
+    const res = await mkdir('demo/b');
     expect(await exists('demo/b')).toBe(true);
+    expect(res).toBe(abs('demo/b'));
+  });
+
+  it('does not throw if it already exists', async () => {
+    expect(await exists('demo/a')).toBe(true);
+    const res = await mkdir('demo/a');
+    expect(await exists('demo/a')).toBe(true);
+    expect(res).toBe(abs('demo/a'));
   });
 });
 
@@ -104,6 +111,11 @@ describe('name', () => {
   it('find the file name in the path', async () => {
     expect(await name('demo/abs.js')).toBe('abs.js');
     expect(await name(abs('demo/abs.js'))).toBe('abs.js');
+  });
+
+  it('performs well without extension', async () => {
+    expect(await name('demo/abs')).toBe('abs');
+    expect(await name(abs('demo/abs'))).toBe('abs');
   });
 });
 
@@ -115,15 +127,17 @@ describe('remove', () => {
   it('removes a file', async () => {
     await write('demo/remove.md', 'Hello!');
     expect(await cat('demo/remove.md')).toBe('Hello!');
-    await remove('demo/remove.md');
+    const file = await remove('demo/remove.md');
     expect(await exists('demo/remove.md')).toBe(false);
+    expect(file).toBe(abs('demo/remove.md'));
   });
 
   it('removes a directory', async () => {
     await mkdir('demo/b');
     expect(await exists('demo/b')).toBe(true);
-    await remove('demo/b');
+    const file = await remove('demo/b');
     expect(await exists('demo/b')).toBe(false);
+    expect(file).toBe(abs('demo/b'));
   });
 
   it('removes a directory with files', async () => {
@@ -131,8 +145,9 @@ describe('remove', () => {
     await write('demo/b/remove.md', 'Hello!');
     expect(await exists('demo/b')).toBe(true);
     expect(await cat('demo/b/remove.md')).toBe('Hello!');
-    await remove('demo/b');
+    const file = await remove('demo/b');
     expect(await exists('demo/b')).toBe(false);
+    expect(file).toBe(abs('demo/b'));
   });
 
   it('removes a directory with deeply nested files', async () => {
@@ -144,8 +159,9 @@ describe('remove', () => {
     expect(await cat('demo/x/remove.md')).toBe('Hello!');
     expect(await exists('demo/x/c')).toBe(true);
     expect(await cat('demo/x/c/remove.md')).toBe('Hello!');
-    await remove('demo/x');
+    const file = await remove('demo/x');
     expect(await exists('demo/x')).toBe(false);
+    expect(file).toBe(abs('demo/x'));
   });
 
   it('cannot remove the root', async () => {
@@ -155,31 +171,23 @@ describe('remove', () => {
 
 
 
-describe.skip('read', () => {
-  it('can read a markdown file', async () => {
-    expect(await read('demo/readme.md')).toContain('# Hello!');
-  });
-
-  it('can read a directory', async () => {
-    expect(await read()).toContain(__dirname + '/LICENSE');
-    expect(await read('.')).toContain(__dirname + '/LICENSE');
-  });
-});
-
-
-
 describe('stat', () => {
   it('defaults to the current dir', async () => {
-    const readme = await stat();
-    expect(readme.isDirectory()).toBe(true);
+    expect(await stat().isDirectory()).toBe(true);
+    expect(await stat(process.cwd()).isDirectory()).toBe(true);
+    expect(await stat(__dirname).isDirectory()).toBe(true);
   });
 
   it('can analyze whether a path is a directory or not', async () => {
-    const readme = await stat('demo/readme.md');
-    expect(readme.isDirectory()).toBe(false);
+    expect(await stat('demo').isDirectory()).toBe(true);
+    expect(await stat('demo/readme.md').isDirectory()).toBe(false);
+    expect(await stat(__filename).isDirectory()).toBe(false);
+  });
 
-    const demo = await stat('demo');
-    expect(demo.isDirectory()).toBe(true);
+  it('can read some dates', async () => {
+    const date = await stat('demo/readme.md').atime;
+    expect(date.constructor.name).toBe('Date');
+    expect(date).toEqual(new Date(date))
   });
 });
 
@@ -218,14 +226,13 @@ describe('write', () => {
   });
 });
 
-// create(), read(), update(), remove()
 
 
 describe('other tests', () => {
   it('can walk and filter and map', async () => {
     const files = await walk('demo')
       .filter(file => /\/readme\.md$/.test(file))
-      .map(readFile);
+      .map(read);
 
     expect(files).toContain('# Sub-sub-level\n');
   });
