@@ -1,4 +1,4 @@
-// The best filesystem for array manipulation
+// The best filesystem for promises and array manipulation
 const fs = require('fs');
 const path = require('path');
 const { promisify } = require('util');

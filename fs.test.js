@@ -1,4 +1,4 @@
-// fs-array
+// fs-promises
 import {
   abs,
   cat,
