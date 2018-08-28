@@ -1,0 +1,30 @@
+{
+  "name": "fs-promises",
+  "version": "1.0.0",
+  "description": "My own, custom fs functions that work great with arrays even though they are not suitable for concurrency",
+  "main": "fs.js",
+  "scripts": {
+    "test": "jest --coverage",
+    "watch": "jest --watch --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/franciscop/fs-array.git"
+  },
+  "bugs": {
+    "url": "https://github.com/franciscop/fs-array/issues"
+  },
+  "homepage": "https://github.com/franciscop/fs-array#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-jest": "^21.2.0",
+    "babel-preset-env": "^1.6.1",
+    "jest": "^23.5.0"
+  },
+  "dependencies": {
+    "magic-promises": "^1.0.1"
+  }
+}
