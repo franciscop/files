@@ -1,7 +1,7 @@
 {
   "name": "fs-promises",
   "version": "1.0.0",
-  "description": "My own, custom fs functions that work great with arrays even though they are not suitable for concurrency",
+  "description": "Node.js filesystem API easily usable with Promises and arrays.",
   "main": "fs.js",
   "scripts": {
     "test": "jest --coverage",

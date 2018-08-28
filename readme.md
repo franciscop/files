@@ -1,6 +1,6 @@
 # File System Promises
 
-Node.js filesystem API designed to be easily usable with arrays and promises. It does:
+Node.js filesystem API easily usable with Promises and arrays. It does:
 
 - absolute paths with the root as the running script.
 - `'utf-8'` and strings. Won't return Buffers.
