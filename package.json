@@ -12,12 +12,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/franciscop/fs-array.git"
+    "url": "git+https://github.com/franciscop/fs-promises.git"
   },
   "bugs": {
-    "url": "https://github.com/franciscop/fs-array/issues"
+    "url": "https://github.com/franciscop/fs-promises/issues"
   },
-  "homepage": "https://github.com/franciscop/fs-array#readme",
+  "homepage": "https://github.com/franciscop/fs-promises#readme",
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-jest": "^21.2.0",
