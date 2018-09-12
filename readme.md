@@ -9,13 +9,14 @@ Node.js filesystem API easily usable with Promises and arrays. It does:
 Example: find the content of all `readme.md` in the directory and sub-dirs:
 
 ```js
-const { read, walk } = require('fs-promises');
+const { read, walk } = require('fs-array');
+
 const files = await walk('demo')
   .filter(name => /\/readme\.md$/.test(name))
   .map(read);
 
 console.log(files);
-// ['# fs-promises', '# sub-dir', ...]
+// ['# fs-array', '# sub-dir', ...]
 ```
 
 
@@ -251,7 +252,7 @@ Read the specified file contents into a string:
 
 ```js
 console.log(await read('readme.md'));
-// # fs-promises ...
+// # fs-array ...
 ```
 
 File reads are relative as always to the executing script. It expects a single argument so you can easily put an array on it:

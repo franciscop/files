@@ -13,7 +13,7 @@ import {
   stat,
   walk,
   write
-} from './fs';
+} from './fs.min';
 
 // Native file system and path
 import nfs from 'fs';

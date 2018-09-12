@@ -124,7 +124,7 @@ const write = (name, body = '') => {
 
 
 
-module.exports = {
+export default {
   abs,
   cat,
   exists,
