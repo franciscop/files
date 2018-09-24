@@ -2,6 +2,7 @@
 import {
   abs,
   cat,
+  dir,
   exists,
   join,
   list,
@@ -45,6 +46,16 @@ describe('abs', () => {
 describe('cat', () => {
   it('can read a markdown file', async () => {
     expect(await cat('demo/readme.md')).toContain('# Hello!');
+  });
+});
+
+
+
+describe('dir', () => {
+  it('can put the full folder path', async () => {
+    expect(await dir('demo/a/b/readme.md')).toContain('/fs/demo/a/b');
+    expect(await dir(dir('demo/a/b/readme.md'))).not.toContain('/fs/demo/a/b');
+    expect(await dir(dir(dir('demo/a/b/readme.md')))).not.toContain('/fs/demo/a');
   });
 });
 
@@ -102,6 +113,15 @@ describe('mkdir', () => {
     const res = await mkdir('demo/a');
     expect(await exists('demo/a')).toBe(true);
     expect(res).toBe(abs('demo/a'));
+  });
+
+  it('creates it even if the parent does not exist', async () => {
+    await remove('demo/c');
+    expect(await exists('demo/c')).toBe(false);
+    const res = await mkdir('demo/c/d/e');
+    expect(await exists('demo/c/d/e')).toBe(true);
+    expect(res).toBe(abs('demo/c/d/e'));
+    await remove('demo/c');
   });
 });
 

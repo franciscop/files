@@ -26,6 +26,7 @@ console.log(files);
 |--------------------|--------------------------------------------------------|
 |[abs()](#abs)       |retrieve the absolute path of the path                  |
 |[cat()](#cat)*      |*alias* of [`read()`](#read)                            |
+|[dir()](#dir)       |get the directory of the path                           |
 |[exists()](#exists) |check whenever a file or folder exists                  |
 |[join()](#join)     |put several path parts together in a cross-browser way  |
 |[list()](#list)     |list all of the files and folders of the path           |
@@ -122,10 +123,25 @@ console.log(['a', 'b'].map(abs));
 
 
 
+### dir()
+
+```js
+dir(path:string) => :string
+```
+
+Get the directory of the passed path:
+
+```js
+console.log(name('~/hello/world.js'));
+// /home/me/hello
+```
+
+
+
 ### exists()
 
 ```js
-exists(file:string) => :Promise(:boolean)
+exists(path:string) => :Promise(:boolean)
 ```
 
 Check whenever a file or folder exists:
@@ -245,7 +261,7 @@ console.log(name('~/hello/world.js'));
 ### read()
 
 ```js
-read(file:string) => :Promise(:string)
+read(path:string) => :Promise(:string)
 ```
 
 Read the specified file contents into a string:
@@ -280,7 +296,7 @@ console.log(await read('readme.md').split('\n').filter(l => /^##\s+/.test(l)));
 ### remove()
 
 ```js
-remove(file:string) => :Promise(:string)
+remove(path:string) => :Promise(:string)
 ```
 
 
@@ -289,6 +305,9 @@ Remove a file or folder (recursively) and return the absolute path that was remo
 ```js
 console.log(await remove('readme.md'));
 // /home/me/projects/readme.md
+
+console.log(await remove('~/old-project'));
+// /home/me/old-project
 ```
 
 
@@ -296,10 +315,10 @@ console.log(await remove('readme.md'));
 ### stat()
 
 ```js
-stat(file:string) => :Promise(:object)
+stat(path:string) => :Promise(:object)
 ```
 
-Get some information about the current file:
+Get some information about the current path:
 
 ```js
 console.log(await stat().isDirectory());
@@ -317,7 +336,7 @@ console.log(await stat('readme.md').atime);
 ### walk()
 
 ```js
-walk(file:string) => :Promise(:Array(:string))
+walk(path:string) => :Promise(:Array(:string))
 ```
 
 Recursively list all of the files from the specified folder:
@@ -341,7 +360,7 @@ console.log(await walk('demo').filter(file => /\.md$/.test(file)).map(read));
 ### write()
 
 ```js
-write(file:string, content:string) => :Promise(:object)
+write(path:string, content:string) => :Promise(:object)
 ```
 
 Create a new file or put data into a file that already exists. Returns the path of the file:

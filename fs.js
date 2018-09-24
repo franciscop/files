@@ -32,6 +32,11 @@ const cat = name => {
 
 
 
+// Get the directory from path
+const dir = name => path.dirname(abs(name));
+
+
+
 // Check whether a filename exists or not
 const exists = name => {
   const file = abs(name);
@@ -62,8 +67,12 @@ const mkdir = name => {
   const file = abs(name);
   const realmkdir = promisify(fs.mkdir);
 
-  // Make sure it doesn't fail
-  return magic(realmkdir(file)).catch(err => {}).then(() => file);
+  return magic(file.split(path.sep).map((part, i, all) => {
+    return all.slice(0, i + 1).join(path.sep);
+  }).filter(Boolean).reduce((prom, path) => {
+    return prom.then(async () => await exists(path) ? path : realmkdir(path))
+      .catch(err => {}).then(() => file);
+  }, Promise.resolve()));
 };
 
 
@@ -78,13 +87,13 @@ const remove = name => magic([abs(name)]).map(async file => {
   if (file === '/') throw new Error('Cannot remove the root file');
   const stats = await stat(file);
 
-  if (stats.isDirectory()) {
+  if (stats && stats.isDirectory()) {
     const files = await walk(file).map(remove);
     await list(file).map(remove);
-    await promisify(fs.rmdir)(file);
+    await promisify(fs.rmdir)(file).catch(err => {});
     return file;
   }
-  await promisify(fs.unlink)(file);
+  await promisify(fs.unlink)(file).catch(err => {});
   return file;
 })[0];
 
@@ -94,7 +103,7 @@ const remove = name => magic([abs(name)]).map(async file => {
 const stat = name => {
   const file = abs(name);
   const lstat = promisify(fs.lstat);
-  return magic(lstat(file));
+  return magic(lstat(file)).catch(err => {});
 };
 
 
@@ -127,6 +136,7 @@ const write = (name, body = '') => {
 export default {
   abs,
   cat,
+  dir,
   exists,
   join,
   list,
