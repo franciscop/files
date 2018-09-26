@@ -360,7 +360,7 @@ console.log(await walk('demo').filter(file => /\.md$/.test(file)).map(read));
 ### write()
 
 ```js
-write(path:string, content:string) => :Promise(:object)
+write(path:string, content:string) => :Promise(:string)
 ```
 
 Create a new file or put data into a file that already exists. Returns the path of the file:

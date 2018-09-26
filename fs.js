@@ -128,7 +128,7 @@ const walk = name => {
 const write = (name, body = '') => {
   const file = abs(name);
   const writeFile = promisify(fs.writeFile);
-  return magic(writeFile(file, body, 'utf-8'));
+  return magic(writeFile(file, body, 'utf-8').then(() => file));
 };
 
 
