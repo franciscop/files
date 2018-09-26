@@ -14,6 +14,7 @@
     "promise",
     "all"
   ],
+  "files": [],
   "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
   "license": "MIT",
   "repository": {
@@ -25,7 +26,7 @@
   },
   "homepage": "https://github.com/franciscop/fs-array#readme",
   "dependencies": {
-    "magic-promises": "^1.1.0"
+    "magic-promises": "^1.1.1"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
