@@ -6,6 +6,15 @@ const magic = require('magic-promises');
 
 
 
+const exec = async (com, buffer = 10) => {
+  const nat = promisify(require('child_process').exec);
+  const { stdout, stderr } = await nat(com, { maxBuffer: 1024 * 1024 * buffer });
+  if (stderr) throw new Error(stderr);
+  return stdout.trim();
+};
+
+
+
 // Retrieve the full, absolute path for the path
 const abs = (name = '.', base = process.cwd()) => {
 
@@ -109,12 +118,12 @@ const stat = name => {
 
 
 // Walk the walk (list all dirs and subdirectories)
-const walk = name => {
+const rWalk = name => {
   const file = abs(name);
 
   const deepper = async file => {
     if ((await stat(file)).isDirectory()) {
-      return walk(file);
+      return rWalk(file);
     }
     return [file];
   };
@@ -122,6 +131,13 @@ const walk = name => {
   return list(file).map(deepper).reduce((all, arr) => all.concat(arr), []);
 };
 
+const walk = name => magic([abs(name)])
+  .filter(exists)
+  .map(file => exec(`find ${file} -type f`))
+  .shift()
+  .split('\n')
+  .filter(f => f)
+  .catch(err => rWalk(abs(name)));
 
 
 // Create a new file with the specified contents
@@ -133,17 +149,17 @@ const write = (name, body = '') => {
 
 
 
-export default {
+export {
   abs,
   cat,
   dir,
   exists,
   join,
   list,
-  ls: list,
+  list as ls,
   mkdir,
   name,
-  read: cat,
+  cat as read,
   remove,
   stat,
   walk,

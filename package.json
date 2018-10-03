@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rollup fs.js --name fs --output.format umd | uglifyjs -o fs.min.js",
     "gzip": "echo $(gzip -c fs.min.js | wc -c) bytes",
-    "test": "jest --coverage"
+    "test": "npm run build && jest --coverage"
   },
   "keywords": [
     "fs",

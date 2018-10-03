@@ -14,7 +14,7 @@ import {
   stat,
   walk,
   write
-} from './fs.min';
+} from './fs';
 
 // Native file system and path
 import nfs from 'fs';
@@ -215,7 +215,8 @@ describe('stat', () => {
 
 describe('walk', () => {
   it('defaults to the current directory', async () => {
-    expect(await walk()).toContain(__dirname + '/fs.js');
+    const files = await walk();
+    expect(files).toContain(__dirname + '/fs.js');
   });
 
   it('can deep walk', async () => {
