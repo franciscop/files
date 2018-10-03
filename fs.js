@@ -4,6 +4,14 @@ const path = require('path');
 const { promisify } = require('util');
 const magic = require('magic-promises');
 
+const os = {
+  mac: () => process.platform === 'darwin',
+  freebsd: () => process.platform === 'freebsd',
+  linux: () => process.platform === 'linux',
+  sun: () => process.platform === 'sunos',
+  windows: () => process.platform === 'win32'
+};
+
 
 
 const exec = async (com, buffer = 10) => {
@@ -131,13 +139,15 @@ const rWalk = name => {
   return list(file).map(deepper).reduce((all, arr) => all.concat(arr), []);
 };
 
-const walk = name => magic([abs(name)])
-  .filter(exists)
-  .map(file => exec(`find ${file} -type f`))
-  .shift()
-  .split('\n')
-  .filter(f => f)
-  .catch(err => rWalk(abs(name)));
+const walk = name => os.linux() || os.mac()
+  ? magic([abs(name)])
+    .filter(exists)
+    .map(file => exec(`find ${file} -type f`))
+    .shift()
+    .split('\n')
+    .filter(f => f)
+    .catch(err => rWalk(abs(name)))
+  : rWalk(name);
 
 
 // Create a new file with the specified contents
