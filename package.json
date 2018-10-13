@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/franciscop/fs-array#readme",
   "dependencies": {
+    "atocha": "^1.0.1",
     "magic-promises": "^1.2.0"
   },
   "devDependencies": {

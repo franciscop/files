@@ -12,6 +12,7 @@ import {
   remove,
   read,
   stat,
+  tmp,
   walk,
   write
 } from './fs';
@@ -208,6 +209,14 @@ describe('stat', () => {
     const date = await stat('demo/readme.md').atime;
     expect(date.constructor.name).toBe('Date');
     expect(date).toEqual(new Date(date))
+  });
+});
+
+
+
+describe('tmp', () => {
+  it('works with the absolute path', async () => {
+    expect(await tmp()).toBe('/tmp');
   });
 });
 

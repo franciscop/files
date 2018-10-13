@@ -1,24 +1,20 @@
 // The best filesystem for promises and array manipulation
 const fs = require('fs');
 const path = require('path');
+const { tmpdir } = require('os');
 const { promisify } = require('util');
 const magic = require('magic-promises');
+const run = require('atocha');
 
-const os = {
-  mac: () => process.platform === 'darwin',
-  freebsd: () => process.platform === 'freebsd',
-  linux: () => process.platform === 'linux',
-  sun: () => process.platform === 'sunos',
-  windows: () => process.platform === 'win32'
-};
 
 
 
-const exec = async (com, buffer = 10) => {
-  const nat = promisify(require('child_process').exec);
-  const { stdout, stderr } = await nat(com, { maxBuffer: 1024 * 1024 * buffer });
-  if (stderr) throw new Error(stderr);
-  return stdout.trim();
+const os = {
+  mac: process.platform === 'darwin',
+  freebsd: process.platform === 'freebsd',
+  linux: process.platform === 'linux',
+  sun: process.platform === 'sunos',
+  windows: process.platform === 'win32'
 };
 
 
@@ -125,6 +121,15 @@ const stat = name => {
 
 
 
+// Get a temporary folder
+const tmp = (...args) => {
+  const path = join(tmpdir(), ...args);
+  console.log(  typeof path);
+  // return magic(mkdir(path));
+};
+
+
+
 // Walk the walk (list all dirs and subdirectories)
 const rWalk = name => {
   const file = abs(name);
@@ -139,10 +144,10 @@ const rWalk = name => {
   return list(file).map(deepper).reduce((all, arr) => all.concat(arr), []);
 };
 
-const walk = name => os.linux() || os.mac()
+const walk = name => os.linux || os.mac
   ? magic([abs(name)])
     .filter(exists)
-    .map(file => exec(`find ${file} -type f`))
+    .map(file => run(`find ${file} -type f`))
     .shift()
     .split('\n')
     .filter(f => f)
@@ -172,6 +177,7 @@ export {
   cat as read,
   remove,
   stat,
+  tmp,
   walk,
   write
 };
