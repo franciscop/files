@@ -122,11 +122,7 @@ const stat = name => {
 
 
 // Get a temporary folder
-const tmp = (...args) => {
-  const path = join(tmpdir(), ...args);
-  console.log(  typeof path);
-  // return magic(mkdir(path));
-};
+const tmp = (...args) => mkdir(join(tmpdir(), ...args));
 
 
 
