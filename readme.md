@@ -28,6 +28,7 @@ console.log(files);
 |[cat()](#cat)*      |*alias* of [`read()`](#read)                            |
 |[dir()](#dir)       |get the directory of the path                           |
 |[exists()](#exists) |check whenever a file or folder exists                  |
+|[home()](#home)     |get the home directory                                  |
 |[join()](#join)     |put several path parts together in a cross-browser way  |
 |[list()](#list)     |list all of the files and folders of the path           |
 |[ls()](#list)*      |*alias* of [`.list()`](#list)                           |
@@ -36,6 +37,7 @@ console.log(files);
 |[read()](#read)     |read the file from the specified path                   |
 |[remove()](#remove) |remove a file or folder (recursively)                   |
 |[stat()](#stat)     |get some information about the current file             |
+|[tmp()](#tmp)       |find the temporary directory or a folder inside         |
 |[walk()](#walk)     |recursively list all of the files and folders           |
 |[write()](#write)   |create a new file or put data into a file               |
 
@@ -161,6 +163,37 @@ To filter based on whether it exists or not, extend it to an array of promises, 
 ```js
 const keeper = file => exists(file).then(keep => keep && file);
 console.log(await ['a.md', 'b.md'].map(keeper).filter(file => file));
+```
+
+
+
+### home()
+
+```js
+home(arg1:string, arg2:string, ...) => Promise(:string)
+```
+
+Find the home directory if called without arguments, or the specified directory inside the home folder as specified in the arguments.
+
+```js
+console.log(await home());
+// /home/me/
+
+console.log(await home('demo'));
+// /home/me/demo/
+
+console.log(await home('demo', 'a'));
+// /home/me/demo/a/
+```
+
+It will create the specified folder if it does not exist yet.
+
+To make sure the new folder is empty, you can call `remove()` and `mkdir()` consecutively:
+
+```js
+const home = await home('demo').then(remove).then(mkdir);
+console.log(home);
+// /home/me/demo/ (empty)
 ```
 
 
@@ -329,6 +362,37 @@ console.log(await stat('readme.md').isFile());
 
 console.log(await stat('readme.md').atime);
 // 2018-08-27T23:42:16.206Z
+```
+
+
+
+### tmp()
+
+```js
+tmp(arg1:string, arg2:string, ...) => Promise(:string)
+```
+
+Find the temporary directory. If arguments are passed, find the specified directory inside the tmp folder:
+
+```js
+console.log(await tmp());
+// /tmp/
+
+console.log(await tmp('demo'));
+// /tmp/demo/
+
+console.log(await tmp('demo', 'a'));
+// /tmp/demo/a/
+```
+
+It will create the specified folder if it does not exist yet.
+
+To make sure the new folder is empty, you can call `remove()` and `mkdir()` consecutively:
+
+```js
+const tmp = await tmp('demo').then(remove).then(mkdir);
+console.log(tmp);
+// /tmp/demo/ (empty)
 ```
 
 

@@ -1,7 +1,7 @@
 // The best filesystem for promises and array manipulation
 const fs = require('fs');
 const path = require('path');
-const { tmpdir } = require('os');
+const { homedir, tmpdir } = require('os');
 const { promisify } = require('util');
 const magic = require('magic-promises');
 const run = require('atocha');
@@ -54,6 +54,11 @@ const exists = name => {
 
 
 
+// Get the home directory: https://stackoverflow.com/a/9081436/938236
+const home = (...args) => mkdir(join(homedir(), ...args));
+
+
+
 // Put several path segments together
 const join = (...args) => abs(path.join(...args));
 
@@ -99,10 +104,10 @@ const remove = name => magic([abs(name)]).map(async file => {
   if (stats && stats.isDirectory()) {
     const files = await walk(file).map(remove);
     await list(file).map(remove);
-    // await promisify(fs.rmdir)(file).catch(err => {});
+    await promisify(fs.rmdir)(file).catch(err => {});
     return file;
   }
-  // await promisify(fs.unlink)(file).catch(err => {});
+  await promisify(fs.unlink)(file).catch(err => {});
   return file;
 })[0];
 

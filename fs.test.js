@@ -188,6 +188,11 @@ describe('remove', () => {
   it('cannot remove the root', async () => {
     await expect(remove('/')).rejects.toThrow(/remove the root/);
   });
+
+  it('will ignore a non-existing file', async () => {
+    expect(await exists('demo/d')).toBe(false);
+    await expect(await remove('demo/d')).toEqual(abs('demo/d'));
+  });
 });
 
 
