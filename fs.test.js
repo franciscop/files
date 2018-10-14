@@ -4,6 +4,7 @@ import {
   cat,
   dir,
   exists,
+  home,
   join,
   list,
   ls,
@@ -21,6 +22,16 @@ import {
 import nfs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
+
+const fake = async (obj, key, value, cb) => {
+  const init = obj[key];
+  Object.defineProperty(obj, key, { value, writable: true });
+  try {
+    return await cb();
+  } finally {
+    Object.defineProperty(obj, key, { value: init, writable: true });
+  }
+};
 
 
 
@@ -86,6 +97,14 @@ describe('exists', () => {
   it('can check the demo', async () => {
     expect(await exists('demo')).toBe(true);
     expect(await exists('aaa')).toBe(false);
+  });
+});
+
+
+
+describe('home', () => {
+  it('uses the home directory', async () => {
+    expect(await home()).toMatch(/^\/home\//);
   });
 });
 
@@ -242,16 +261,6 @@ describe('tmp', () => {
 
 
 describe('walk', () => {
-  const platform = async (value, cb) => {
-    const init = process.platform;
-    Object.defineProperty(process, 'platform', { value, writable: true });
-    try {
-      return await cb();
-    } finally {
-      Object.defineProperty(process, 'platform', { value, writable: true });
-    }
-  };
-
   it('defaults to the current directory', async () => {
     const files = await walk();
     expect(files).toContain(__dirname + '/fs.js');
@@ -270,7 +279,7 @@ describe('walk', () => {
   });
 
   it('can deep walk on Windows', async () => {
-    return platform('win32', async () => {
+    return fake(process, 'platform', 'win32', async () => {
       const files = await walk('demo');
       expect(files).toContain(__dirname + '/demo/readme.md');
       expect(files).toContain(__dirname + '/demo/a/readme.md');
@@ -279,7 +288,7 @@ describe('walk', () => {
   });
 
   it('can deep walk on Mac', async () => {
-    return platform('darwin', async () => {
+    return fake(process, 'platform', 'darwin', async () => {
       const files = await walk('demo');
       expect(files).toContain(__dirname + '/demo/readme.md');
       expect(files).toContain(__dirname + '/demo/a/readme.md');

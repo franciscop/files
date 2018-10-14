@@ -179,6 +179,7 @@ export {
   cat,
   dir,
   exists,
+  home,
   join,
   list,
   list as ls,
