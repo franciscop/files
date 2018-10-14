@@ -8,14 +8,9 @@ const run = require('atocha');
 
 
 
-
-const os = {
-  mac: process.platform === 'darwin',
-  freebsd: process.platform === 'freebsd',
-  linux: process.platform === 'linux',
-  sun: process.platform === 'sunos',
-  windows: process.platform === 'win32'
-};
+// Find whether it's Linux or Mac, where we can use `find`
+const mac = () => process.platform === 'darwin';
+const linux = () => process.platform === 'linux';
 
 
 
@@ -97,7 +92,7 @@ const name = path.basename;
 
 // Delete a file or directory (recursively)
 const remove = name => magic([abs(name)]).map(async file => {
-  if (file === '/') throw new Error('Cannot remove the root file');
+  if (file === '/') throw new Error('Cannot remove the root folder `/`');
   const stats = await stat(file);
 
   if (stats && stats.isDirectory()) {
@@ -126,7 +121,7 @@ const tmp = (...args) => mkdir(join(tmpdir(), ...args));
 
 
 
-// Walk the walk (list all dirs and subdirectories)
+// Perform a recursive walk
 const rWalk = name => {
   const file = abs(name);
 
@@ -137,10 +132,19 @@ const rWalk = name => {
     return [file];
   };
 
+  // Note: list() already wraps the promise
   return list(file).map(deepper).reduce((all, arr) => all.concat(arr), []);
 };
 
-const walk = name => os.linux || os.mac
+// Attempt to make an OS walk, and fallback to the recursive one
+// const walk = name => magic(exists(abs(name)).then(isThere => {
+//   if (!isThere) magic([]);
+//   if (linux() || mac()) {
+//     return run(`find ${abs(name)} -type f`).split('\n');
+//   }
+//   return rWalk(abs(name));
+// }));
+const walk = name => linux() || mac()
   ? magic([abs(name)])
     .filter(exists)
     .map(file => run(`find ${file} -type f`))
@@ -148,7 +152,8 @@ const walk = name => os.linux || os.mac
     .split('\n')
     .filter(f => f)
     .catch(err => rWalk(abs(name)))
-  : rWalk(name);
+: rWalk(name);
+
 
 
 // Create a new file with the specified contents
@@ -177,3 +182,4 @@ export {
   walk,
   write
 };
+  

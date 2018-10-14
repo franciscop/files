@@ -116,7 +116,7 @@ describe('mkdir', () => {
     expect(res).toBe(abs('demo/a'));
   });
 
-  it('creates it even if the parent does not exist', async () => {
+  it.only('creates it even if the parent does not exist', async () => {
     await remove('demo/c');
     expect(await exists('demo/c')).toBe(false);
     const res = await mkdir('demo/c/d/e');
@@ -222,7 +222,17 @@ describe('tmp', () => {
 
 
 
-describe('walk', () => {
+describe.only('walk', () => {
+  const platform = async (value, cb) => {
+    const init = process.platform;
+    Object.defineProperty(process, 'platform', { value, writable: true });
+    try {
+      return await cb();
+    } finally {
+      Object.defineProperty(process, 'platform', { value, writable: true });
+    }
+  };
+
   it('defaults to the current directory', async () => {
     const files = await walk();
     expect(files).toContain(__dirname + '/fs.js');
@@ -233,6 +243,24 @@ describe('walk', () => {
     expect(files).toContain(__dirname + '/demo/readme.md');
     expect(files).toContain(__dirname + '/demo/a/readme.md');
     expect(files).toContain(__dirname + '/demo/a/b/readme.md');
+  });
+
+  it('can deep walk on Windows', async () => {
+    return platform('win32', async () => {
+      const files = await walk('demo');
+      expect(files).toContain(__dirname + '/demo/readme.md');
+      expect(files).toContain(__dirname + '/demo/a/readme.md');
+      expect(files).toContain(__dirname + '/demo/a/b/readme.md');
+    });
+  });
+
+  it('can deep walk on Mac', async () => {
+    return platform('darwin', async () => {
+      const files = await walk('demo');
+      expect(files).toContain(__dirname + '/demo/readme.md');
+      expect(files).toContain(__dirname + '/demo/a/readme.md');
+      expect(files).toContain(__dirname + '/demo/a/b/readme.md');
+    });
   });
 });
 
