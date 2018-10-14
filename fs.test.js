@@ -70,6 +70,7 @@ describe('list', () => {
 
   it('can load the demo', async () => {
     const files = await list('demo', __dirname);
+    expect(files).not.toContain(__dirname + '/fs.js');
     expect(files).toContain(__dirname + '/demo/a');
     expect(files).toContain(__dirname + '/demo/readme.md');
   });
@@ -228,8 +229,13 @@ describe('tmp', () => {
     expect(await tmp('demo')).toBe('/tmp/demo');
   });
 
-  it('works with the absolute path', async () => {
-    expect(ls(tmp('demo'))).toEqual([]);
+  it('can reset the doc', async () => {
+    await tmp('demo').then(remove);
+    expect(await tmp('demo').then(ls)).toEqual([]);
+    mkdir(await tmp('demo/a'));
+    expect(await tmp('demo').then(ls)).toEqual(['/tmp/demo/a']);
+    await tmp('demo').then(remove).then(mkdir);
+    expect(await tmp('demo').then(ls)).toEqual([]);
   });
 });
 
@@ -305,6 +311,10 @@ describe('write', () => {
 
 
 describe('other tests', () => {
+  it('can combine async inside another methods', async () => {
+    expect(await ls(tmp('demo/x'))).toEqual([]);
+  });
+
   it('can walk and filter and map', async () => {
     const files = await walk('demo')
       .filter(file => /\/readme\.md$/.test(file))

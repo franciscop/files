@@ -65,12 +65,15 @@ const join = (...args) => abs(path.join(...args));
 
 
 // List all the files in the folder
-const list = name => {
-  const file = abs(name);
+const list = dir => {
   const readDir = promisify(fs.readdir);
 
   // Map it to make all of the paths absolute
-  return magic(readDir(file)).map(name => join(file, name));
+  return magic([dir])
+    .map(abs)
+    .map(file => readDir(file))
+    .shift()
+    .map(file => abs(file, dir));
 };
 
 
