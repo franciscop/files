@@ -1,6 +1,6 @@
 {
   "name": "fs-array",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Node.js filesystem API easily usable with Promises and arrays",
   "main": "fs.min.js",
   "scripts": {
