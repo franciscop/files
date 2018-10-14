@@ -153,15 +153,6 @@ const walk = name => magic(exists(abs(name)).then(isThere => {
   }
   return rWalk(abs(name)).filter(Boolean);
 }));
-// const walk = name => linux() || mac()
-//   ? magic([abs(name)])
-//     .filter(exists)
-//     .map(file => run(`find ${file} -type f`))
-//     .shift()
-//     .split('\n')
-//     .filter(f => f)
-//     .catch(err => rWalk(abs(name)))
-// : rWalk(name);
 
 
 
