@@ -116,7 +116,7 @@ describe('mkdir', () => {
     expect(res).toBe(abs('demo/a'));
   });
 
-  it.only('creates it even if the parent does not exist', async () => {
+  it('creates it even if the parent does not exist', async () => {
     await remove('demo/c');
     expect(await exists('demo/c')).toBe(false);
     const res = await mkdir('demo/c/d/e');
@@ -222,7 +222,7 @@ describe('tmp', () => {
 
 
 
-describe.only('walk', () => {
+describe('walk', () => {
   const platform = async (value, cb) => {
     const init = process.platform;
     Object.defineProperty(process, 'platform', { value, writable: true });
@@ -236,6 +236,11 @@ describe.only('walk', () => {
   it('defaults to the current directory', async () => {
     const files = await walk();
     expect(files).toContain(__dirname + '/fs.js');
+  });
+
+  it('is empty if it doesn not exist', async () => {
+    const files = await walk('demo/c');
+    expect(files).toEqual([]);
   });
 
   it('can deep walk', async () => {

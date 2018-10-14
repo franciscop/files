@@ -93,15 +93,16 @@ const name = path.basename;
 // Delete a file or directory (recursively)
 const remove = name => magic([abs(name)]).map(async file => {
   if (file === '/') throw new Error('Cannot remove the root folder `/`');
+  if (!await exists(file)) return file;
   const stats = await stat(file);
 
   if (stats && stats.isDirectory()) {
     const files = await walk(file).map(remove);
     await list(file).map(remove);
-    await promisify(fs.rmdir)(file).catch(err => {});
+    // await promisify(fs.rmdir)(file).catch(err => {});
     return file;
   }
-  await promisify(fs.unlink)(file).catch(err => {});
+  // await promisify(fs.unlink)(file).catch(err => {});
   return file;
 })[0];
 
@@ -137,22 +138,22 @@ const rWalk = name => {
 };
 
 // Attempt to make an OS walk, and fallback to the recursive one
-// const walk = name => magic(exists(abs(name)).then(isThere => {
-//   if (!isThere) magic([]);
-//   if (linux() || mac()) {
-//     return run(`find ${abs(name)} -type f`).split('\n');
-//   }
-//   return rWalk(abs(name));
-// }));
-const walk = name => linux() || mac()
-  ? magic([abs(name)])
-    .filter(exists)
-    .map(file => run(`find ${file} -type f`))
-    .shift()
-    .split('\n')
-    .filter(f => f)
-    .catch(err => rWalk(abs(name)))
-: rWalk(name);
+const walk = name => magic(exists(abs(name)).then(isThere => {
+  if (!isThere) return magic([]);
+  if (linux() || mac()) {
+    return run(`find ${abs(name)} -type f`).split('\n').filter(Boolean);
+  }
+  return rWalk(abs(name)).filter(Boolean);
+}));
+// const walk = name => linux() || mac()
+//   ? magic([abs(name)])
+//     .filter(exists)
+//     .map(file => run(`find ${file} -type f`))
+//     .shift()
+//     .split('\n')
+//     .filter(f => f)
+//     .catch(err => rWalk(abs(name)))
+// : rWalk(name);
 
 
 
@@ -182,4 +183,3 @@ export {
   walk,
   write
 };
-  
