@@ -220,8 +220,16 @@ describe('stat', () => {
 
 
 describe('tmp', () => {
-  it('works with the absolute path', async () => {
+  it('works empty', async () => {
     expect(await tmp()).toBe('/tmp');
+  });
+
+  it('works with a path', async () => {
+    expect(await tmp('demo')).toBe('/tmp/demo');
+  });
+
+  it('works with the absolute path', async () => {
+    expect(ls(tmp('demo'))).toEqual([]);
   });
 });
 

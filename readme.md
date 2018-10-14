@@ -191,8 +191,8 @@ It will create the specified folder if it does not exist yet.
 To make sure the new folder is empty, you can call `remove()` and `mkdir()` consecutively:
 
 ```js
-const home = await home('demo').then(remove).then(mkdir);
-console.log(home);
+const dir = await home('demo').then(remove).then(mkdir);
+console.log(dir);
 // /home/me/demo/ (empty)
 ```
 
@@ -390,8 +390,8 @@ It will create the specified folder if it does not exist yet.
 To make sure the new folder is empty, you can call `remove()` and `mkdir()` consecutively:
 
 ```js
-const tmp = await tmp('demo').then(remove).then(mkdir);
-console.log(tmp);
+const dir = await tmp('demo').then(remove).then(mkdir);
+console.log(dir);
 // /tmp/demo/ (empty)
 ```
 
