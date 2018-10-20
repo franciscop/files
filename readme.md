@@ -1,4 +1,4 @@
-# File System Promises
+# File System
 
 Node.js filesystem API easily usable with Promises and arrays. It does:
 

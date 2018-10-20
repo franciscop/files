@@ -51,6 +51,10 @@ describe('abs', () => {
     expect(await abs('demo', 5)).toBe(join(__dirname, '/demo'));
     expect(await abs('demo', true)).toBe(join(__dirname, '/demo'));
   });
+
+  it.skip('can get the home', async () => {
+    expect(await abs('~')).toBe(await home());
+  });
 });
 
 
@@ -96,6 +100,9 @@ describe('exists', () => {
 
   it('can check the demo', async () => {
     expect(await exists('demo')).toBe(true);
+    expect(await exists('/home/francisco/.raspberry/raspbian.zip')).toBe(true);
+    expect(await exists('demo/readme.md')).toBe(true);
+    expect(await exists(await home('Documents'))).toBe(true);
     expect(await exists('aaa')).toBe(false);
   });
 });

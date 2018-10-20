@@ -49,7 +49,7 @@ const dir = name => path.dirname(abs(name));
 const exists = name => {
   const file = abs(name);
   const exists = promisify(fs.exists);
-  return magic(exists(file));
+  return magic(exists(file).catch(res => res));
 };
 
 
