@@ -80,17 +80,27 @@ const list = dir => {
 
 
 // Create a new directory in the specified path
-const mkdir = name => {
-  const file = abs(name);
-  const realmkdir = promisify(fs.mkdir);
-
+const mkdirAsync = promisify(fs.mkdir);
+const mkdir = name => magic(abs(name).then(async file => {
   return magic(file.split(path.sep).map((part, i, all) => {
     return all.slice(0, i + 1).join(path.sep);
   }).filter(Boolean).reduce((prom, path) => {
-    return prom.then(async () => await exists(path) ? path : realmkdir(path))
+    return prom.then(async () => await exists(path) ? path : mkdirAsync(path))
       .catch(err => {}).then(() => file);
   }, Promise.resolve()));
-};
+}));
+
+// const mkdir = name => {
+//   const file = abs(name);
+//   const realmkdir = promisify(fs.mkdir);
+//
+//   return magic(file.split(path.sep).map((part, i, all) => {
+//     return all.slice(0, i + 1).join(path.sep);
+//   }).filter(Boolean).reduce((prom, path) => {
+//     return prom.then(async () => await exists(path) ? path : realmkdir(path))
+//       .catch(err => {}).then(() => file);
+//   }, Promise.resolve()));
+// };
 
 
 
@@ -101,20 +111,21 @@ const name = file => magic(magic(file).then(nameFlat));
 
 
 // Delete a file or directory (recursively)
-const remove = name => magic([abs(name)]).map(async file => {
+const removeDirAsync = promisify(fs.rmdir);
+const removeFileAsync = promisify(fs.unlink);
+const remove = name => magic(abs(name).then(async file => {
   if (file === '/') throw new Error('Cannot remove the root folder `/`');
   if (!await exists(file)) return file;
-  const stats = await stat(file);
 
-  if (stats && stats.isDirectory()) {
+  if (await stat(file).isDirectory()) {
     const files = await walk(file).map(remove);
     await list(file).map(remove);
-    await promisify(fs.rmdir)(file).catch(err => {});
+    await removeDirAsync(file).catch(err => {});
     return file;
   }
-  await promisify(fs.unlink)(file).catch(err => {});
+  await removeFileAsync(file).catch(err => {});
   return file;
-})[0];
+}));
 
 
 
@@ -158,11 +169,12 @@ const walk = name => magic(exists(name).then(async isThere => {
 
 
 // Create a new file with the specified contents
-const write = (name, body = '') => {
-  const file = abs(name);
-  const writeFile = promisify(fs.writeFile);
-  return magic(writeFile(file, body, 'utf-8').then(() => file));
-};
+const writeAsync = promisify(fs.writeFile);
+const writeFlat = (file, body) => writeAsync(file, body, 'utf-8');
+const write = (name, body = '') => magic(abs(name).then(async file => {
+  await writeAsync(file, body);
+  return file;
+}));
 
 
 

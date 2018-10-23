@@ -162,22 +162,22 @@ describe('join', () => {
 
 
 
-describe.skip('mkdir', () => {
-  beforeEach(() => promisify(nfs.rmdir)(abs('demo/b')).catch(err => {}));
-  afterEach(() => promisify(nfs.rmdir)(abs('demo/b')).catch(err => {}));
+describe('mkdir', () => {
+  beforeEach(async () => promisify(nfs.rmdir)(await abs('demo/b')).catch(err => {}));
+  afterEach(async () => promisify(nfs.rmdir)(await abs('demo/b')).catch(err => {}));
 
   it('create a new directory', async () => {
     expect(await exists('demo/b')).toBe(false);
     const res = await mkdir('demo/b');
     expect(await exists('demo/b')).toBe(true);
-    expect(res).toBe(abs('demo/b'));
+    expect(res).toBe(await abs('demo/b'));
   });
 
   it('does not throw if it already exists', async () => {
     expect(await exists('demo/a')).toBe(true);
     const res = await mkdir('demo/a');
     expect(await exists('demo/a')).toBe(true);
-    expect(res).toBe(abs('demo/a'));
+    expect(res).toBe(await abs('demo/a'));
   });
 
   it('creates it even if the parent does not exist', async () => {
@@ -185,7 +185,7 @@ describe.skip('mkdir', () => {
     expect(await exists('demo/c')).toBe(false);
     const res = await mkdir('demo/c/d/e');
     expect(await exists('demo/c/d/e')).toBe(true);
-    expect(res).toBe(abs('demo/c/d/e'));
+    expect(res).toBe(await abs('demo/c/d/e'));
     await remove('demo/c');
   });
 });
@@ -210,15 +210,13 @@ describe('name', () => {
 
 
 
-describe.skip('remove', () => {
-  // beforeEach(() => promisify(nfs.rmdir)(abs('demo/b')).catch(err => {}));
-  // afterEach(() => promisify(nfs.rmdir)(abs('demo/b')).catch(err => {}));
+describe('remove', () => {
   it('removes a file', async () => {
     await write('demo/remove.md', 'Hello!');
     expect(await cat('demo/remove.md')).toBe('Hello!');
     const file = await remove('demo/remove.md');
     expect(await exists('demo/remove.md')).toBe(false);
-    expect(file).toBe(abs('demo/remove.md'));
+    expect(file).toBe(await abs('demo/remove.md'));
   });
 
   it('removes a directory', async () => {
@@ -226,7 +224,7 @@ describe.skip('remove', () => {
     expect(await exists('demo/b')).toBe(true);
     const file = await remove('demo/b');
     expect(await exists('demo/b')).toBe(false);
-    expect(file).toBe(abs('demo/b'));
+    expect(file).toBe(await abs('demo/b'));
   });
 
   it('removes a directory with files', async () => {
@@ -236,7 +234,7 @@ describe.skip('remove', () => {
     expect(await cat('demo/b/remove.md')).toBe('Hello!');
     const file = await remove('demo/b');
     expect(await exists('demo/b')).toBe(false);
-    expect(file).toBe(abs('demo/b'));
+    expect(file).toBe(await abs('demo/b'));
   });
 
   it('removes a directory with deeply nested files', async () => {
@@ -250,7 +248,7 @@ describe.skip('remove', () => {
     expect(await cat('demo/x/c/remove.md')).toBe('Hello!');
     const file = await remove('demo/x');
     expect(await exists('demo/x')).toBe(false);
-    expect(file).toBe(abs('demo/x'));
+    expect(file).toBe(await abs('demo/x'));
   });
 
   it('cannot remove the root', async () => {
@@ -259,7 +257,7 @@ describe.skip('remove', () => {
 
   it('will ignore a non-existing file', async () => {
     expect(await exists('demo/d')).toBe(false);
-    await expect(await remove('demo/d')).toEqual(abs('demo/d'));
+    await expect(await remove('demo/d')).toEqual(await abs('demo/d'));
   });
 });
 
@@ -305,7 +303,7 @@ describe('tmp', () => {
     expect(await tmp('demo')).toBe('/tmp/demo');
   });
 
-  it.skip('can reset the doc', async () => {
+  it('can reset the doc', async () => {
     await tmp('demo').then(remove);
     expect(await tmp('demo').then(ls)).toEqual([]);
     mkdir(await tmp('demo/a'));
@@ -358,9 +356,9 @@ describe('walk', () => {
 
 
 
-describe.skip('write', () => {
-  beforeEach(() => promisify(nfs.unlink)(abs('demo/deleteme.md')).catch(err => {}));
-  afterEach(() => promisify(nfs.unlink)(abs('demo/deleteme.md')).catch(err => {}));
+describe('write', () => {
+  beforeEach(async () => promisify(nfs.unlink)(await abs('demo/deleteme.md')).catch(err => {}));
+  afterEach(async () => promisify(nfs.unlink)(await abs('demo/deleteme.md')).catch(err => {}));
 
   it('creates a new file', async () => {
     expect(await exists('demo/deleteme.md')).toBe(false);
