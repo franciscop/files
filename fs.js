@@ -90,18 +90,6 @@ const mkdir = name => magic(abs(name).then(async file => {
   }, Promise.resolve()));
 }));
 
-// const mkdir = name => {
-//   const file = abs(name);
-//   const realmkdir = promisify(fs.mkdir);
-//
-//   return magic(file.split(path.sep).map((part, i, all) => {
-//     return all.slice(0, i + 1).join(path.sep);
-//   }).filter(Boolean).reduce((prom, path) => {
-//     return prom.then(async () => await exists(path) ? path : realmkdir(path))
-//       .catch(err => {}).then(() => file);
-//   }, Promise.resolve()));
-// };
-
 
 
 // Get the path's filename
@@ -155,9 +143,9 @@ const rWalk = name => {
   return list(file).map(deepper).reduce((all, arr) => all.concat(arr), []);
 };
 
-// Attempt to make an OS walk, and fallback to the recursive one
-// const walk = name => magic();
 
+
+// Attempt to make an OS walk, and fallback to the recursive one
 const walk = name => magic(exists(name).then(async isThere => {
   if (!isThere) return magic([]);
   if (linux() || mac()) {
