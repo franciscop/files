@@ -12,7 +12,7 @@ Example: find the content of all `readme.md` in the directory and sub-dirs:
 const { read, walk } = require('fs-array');
 
 const files = await walk('demo')
-  .filter(name => /\/readme\.md$/.test(name))
+  .filter(/\/readme\.md$/)
   .map(read);
 
 console.log(files);
