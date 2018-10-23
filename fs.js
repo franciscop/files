@@ -15,7 +15,9 @@ const linux = () => process.platform === 'linux';
 
 
 // Retrieve the full, absolute path for the path
-const abs = (name = '.', base = process.cwd()) => {
+const abs = (name = '.', base = process.cwd()) => magic((async () => {
+  name = await name;
+  base = await base;
 
   // Absolute paths do not need more absolutism
   if (path.isAbsolute(name)) return name;
@@ -27,40 +29,39 @@ const abs = (name = '.', base = process.cwd()) => {
 
   // Return the file/folder within the base
   return join(base, name);
-};
+})());
 
 
 
 // Read the contents of a single file
-const cat = name => {
-  const file = abs(name);
-  const readFile = promisify(fs.readFile);
-  return magic(readFile(file, 'utf-8'));
-};
+const readFile = file => promisify(fs.readFile)(file, 'utf-8');
+const cat = name => magic(abs(name).then(readFile).catch(err => ''));
 
 
 
 // Get the directory from path
-const dir = name => path.dirname(abs(name));
+const dirFlat = file => path.dirname(file);
+const dir = name => magic(abs(name).then(dirFlat));
 
 
 
 // Check whether a filename exists or not
-const exists = name => {
-  const file = abs(name);
-  const exists = promisify(fs.exists);
-  return magic(exists(file).catch(res => res));
-};
+const existsAsync = promisify(fs.exists);
+const existsFlat = file => existsAsync(file);
+// Need to catch since for some reason, sometimes promisify() will not work
+//   properly and will return the first boolean arg of exists() as an error
+const exists = name => magic(abs(name).then(existsFlat).catch(res => res));
 
 
 
 // Get the home directory: https://stackoverflow.com/a/9081436/938236
-const home = (...args) => mkdir(join(homedir(), ...args));
+const home = (...args) => magic(join(homedir(), ...args).then(mkdir));
 
 
 
 // Put several path segments together
-const join = (...args) => abs(path.join(...args));
+const joinFlat = parts => path.join(...parts);
+const join = (...parts) => abs(magic(parts).then(joinFlat));
 
 
 
@@ -94,7 +95,8 @@ const mkdir = name => {
 
 
 // Get the path's filename
-const name = path.basename;
+const nameFlat = path.basename;
+const name = file => magic(magic(file).then(nameFlat));
 
 
 
@@ -117,16 +119,13 @@ const remove = name => magic([abs(name)]).map(async file => {
 
 
 // Get some interesting info from the path
-const stat = name => {
-  const file = abs(name);
-  const lstat = promisify(fs.lstat);
-  return magic(lstat(file)).catch(err => {});
-};
+const statAsync = promisify(fs.lstat);
+const stat = name => magic(abs(name).then(statAsync).catch(err => {}));
 
 
 
 // Get a temporary folder
-const tmp = (...args) => mkdir(join(tmpdir(), ...args));
+const tmp = (...args) => abs(join(tmpdir(), ...args).then(mkdir));
 
 
 
@@ -146,10 +145,12 @@ const rWalk = name => {
 };
 
 // Attempt to make an OS walk, and fallback to the recursive one
-const walk = name => magic(exists(abs(name)).then(isThere => {
+// const walk = name => magic();
+
+const walk = name => magic(exists(name).then(async isThere => {
   if (!isThere) return magic([]);
   if (linux() || mac()) {
-    return run(`find ${abs(name)} -type f`).split('\n').filter(Boolean);
+    return run(`find ${await abs(name)} -type f`).split('\n').filter(Boolean);
   }
   return rWalk(abs(name)).filter(Boolean);
 }));
