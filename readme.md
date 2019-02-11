@@ -1,4 +1,4 @@
-# 📁 Files
+# 📁 Files [![npm install files](https://img.shields.io/badge/npm%20install-files-blue.svg)](https://www.npmjs.com/package/files)
 
 Node.js filesystem API easily usable with Promises and arrays:
 
