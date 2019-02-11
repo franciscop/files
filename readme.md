@@ -1,23 +1,27 @@
-# File System
+# 📁 Files
 
-Node.js filesystem API easily usable with Promises and arrays. It does:
-
-- absolute paths with the root as the running script.
-- `'utf-8'` and strings. Won't return Buffers.
-- `Promises` through the [`magic-promises`](#magic-promises) interface.
-
-Example: find the content of all `readme.md` in the directory and sub-dirs:
+Node.js filesystem API easily usable with Promises and arrays:
 
 ```js
-const { read, walk } = require('fs-array');
+const { read, walk } = require('files');
 
-const files = await walk('demo')
+// Find all of the readmes
+const readmes = await walk('demo')
   .filter(/\/readme\.md$/)
   .map(read);
 
-console.log(files);
-// ['# fs-array', '# sub-dir', ...]
+console.log(readmes);
+// ['# files', '# sub-dir', ...]
 ```
+
+Files is a better `fs` filesystem:
+
+- Works with **`'utf-8'`**, as things should be.
+- Uses **Promises** and works as expected with async/await.
+- Exteds promises [with `swear`](https://github.com/franciscop/swear) so you can chain operations easily.
+- **Absolute paths** with the root as the running script.
+- Ignores **the second parameter** if it's not an object so you can work with arrays better like `.map(read)`.
+
 
 
 ## Documentation
@@ -45,11 +49,9 @@ console.log(files);
 
 
 
-### Magic promises
+### Swear
 
-Any method that specifies an output of `:Promise(type)`, it will be following [`magic-promises` specification](https://github.com/franciscop/magic-promises).
-
-Magic Promises are fully compatible with native promises:
+Any method that specifies an output of `:Promise(type)`, it will be following [`swear` specification](https://github.com/franciscop/swear) promise extension. These are fully compatible with native promises:
 
 ```js
 const all = await list('demo');
@@ -57,7 +59,7 @@ const files = all.filter(file => !/node_modules/.test(file));
 // ['a.js', 'b.js', ...] (all of the files and folders except node_modules)
 ```
 
-Or with the magic-promises workflow, you can use it as the type inside `:Promise(type)`, and then `await` for the final value:
+Or with the swear workflow, you can use it as the type inside `:Promise(type)`, and then `await` for the final value:
 
 ```js
 const files = await list(__dirname).filter(file => !/node_modules/.test(file));
@@ -77,10 +79,10 @@ abs(path:string, root=process.cwd():string) => :string
 Retrieve the absolute path of the passed argument relative of the directory running the script:
 
 ```js
-// cd ~/me/projects/fs/ && node index.js
+// cd ~/me/projects/files/ && node index.js
 
 console.log(abs('demo'));
-// /home/me/projects/fs/demo
+// /home/me/projects/files/demo
 
 console.log(abs('../../Documents'));
 // /home/me/Documents
@@ -91,19 +93,19 @@ It will return the same string if the path is already absolute.
 You can pass a second parameter to specify any base directory different from the executing environment:
 
 ```js
-// cd ~/me/projects/fs && node ./demo/abs.js
+// cd ~/me/projects/files && node ./demo/abs.js
 
 // default; Relative to the place where the script is run
 console.log(abs('demo'));
-// /home/me/projects/fs/demo
+// /home/me/projects/files/demo
 
 // default; relative to the console location where the script is run
 console.log(abs('demo', process.cwd()));
-// /home/me/projects/fs/demo
+// /home/me/projects/files/demo
 
 // relative to the current directory (./demo)
 console.log(abs('demo', __dirname));
-// /home/me/projects/fs/demo/demo
+// /home/me/projects/files/demo/demo
 
 // relative to the user's home directory https://stackoverflow.com/q/9080085
 console.log(abs('demo', require('os').homedir()));
@@ -114,7 +116,7 @@ If the second parameter is undefined, or if it's *not a string*, it will be comp
 
 ```js
 console.log(['a', 'b'].map(abs));
-// [ '/home/me/projects/fs/a', '/home/me/projects/fs/b' ]
+// [ '/home/me/projects/files/a', '/home/me/projects/files/b' ]
 ```
 
 
@@ -208,7 +210,7 @@ Put several path segments together in a cross-browser way and return the absolut
 
 ```js
 console.log(join('demo', 'a'));
-// /home/me/projects/fs/demo/a
+// /home/me/projects/files/demo/a
 ```
 
 
@@ -223,22 +225,22 @@ Get all of the files and folders of the specified directory into an array:
 
 ```js
 console.log(await list());
-// ['/home/me/fs/node_modules', '/home/me/fs/demo/abs.js', ...]
+// ['/home/me/files/node_modules', '/home/me/files/demo/abs.js', ...]
 ```
 
 To scan any other directory specify it as a parameter:
 
 ```js
 console.log(await list('demo'));
-// ['/home/me/fs/demo/a', '/home/me/fs/demo/abs.js', ...]
+// ['/home/me/files/demo/a', '/home/me/files/demo/abs.js', ...]
 ```
 
-> **Magic Promises**: you can iterate and treat the returned value as a normal array, except that you'll have to `await` at some point for the whole thing.
+> **Swear interface**: you can iterate and treat the returned value as a normal array, except that you'll have to `await` at some point for the whole thing.
 
 ```js
 // Retrieve all of the files, filter for javascript and get their absolute paths
 console.log(await list().filter(file => /\.js$/.test(file)).map(abs));
-//  ['/home/me/projects/fs/fs.js', '/home/me/projects/fs/fs.test.js', ...]
+//  ['/home/me/projects/files/files.js', '/home/me/projects/files/files.test.js', ...]
 ```
 
 Related methods:
@@ -262,10 +264,10 @@ mkdir(path:string) => :Promise(:string)
 Create the specified directory. If it already exists, do nothing. Returns the directory that was created.
 
 ```js
-// cd ~/projects/fs && node index.js
+// cd ~/projects/files && node index.js
 
 console.log(await mkdir('demo/b'));
-// /home/me/fs/demo/b
+// /home/me/files/demo/b
 ```
 
 Related methods:
@@ -301,7 +303,7 @@ Read the specified file contents into a string:
 
 ```js
 console.log(await read('readme.md'));
-// # fs-array ...
+// # files ...
 ```
 
 File reads are relative as always to the executing script. It expects a single argument so you can easily put an array on it:
@@ -316,7 +318,7 @@ console.log(await walk().filter(file => /\.md/.test(file)).map(read));
 // ['# A', '# B', ...]
 ```
 
-It also follows the `magic-promises` specification, so you can perform any normal string operations on it:
+It also follows the `swear` specification, so you can perform any normal string operations on it:
 
 ```js
 // Find all the secondary headers in a markdown file
@@ -408,7 +410,7 @@ Recursively list all of the files from the specified folder:
 ```js
 // Retrieve all files inside './demo'
 console.log(await walk('demo'));
-// ['/home/me/projects/fs/demo/readme.md', '/home/me/projects/fs/demo/a/readme.md', ...]
+// ['/home/me/projects/files/demo/readme.md', '/home/me/projects/files/demo/a/readme.md', ...]
 ```
 
 It will *not* return directories. You can then use `filter` to filter e.g. by filename:

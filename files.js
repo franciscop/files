@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { homedir, tmpdir } = require('os');
 const { promisify } = require('util');
-const magic = require('magic-promises');
+const swear = require('swear');
 const run = require('atocha');
 
 
@@ -15,7 +15,7 @@ const linux = () => process.platform === 'linux';
 
 
 // Retrieve the full, absolute path for the path
-const abs = (name = '.', base = process.cwd()) => magic((async () => {
+const abs = (name = '.', base = process.cwd()) => swear((async () => {
   name = await name;
   base = await base;
 
@@ -35,13 +35,13 @@ const abs = (name = '.', base = process.cwd()) => magic((async () => {
 
 // Read the contents of a single file
 const readFile = file => promisify(fs.readFile)(file, 'utf-8');
-const cat = name => magic(abs(name).then(readFile).catch(err => ''));
+const cat = name => swear(abs(name).then(readFile).catch(err => ''));
 
 
 
 // Get the directory from path
 const dirFlat = file => path.dirname(file);
-const dir = name => magic(abs(name).then(dirFlat));
+const dir = name => swear(abs(name).then(dirFlat));
 
 
 
@@ -50,18 +50,18 @@ const existsAsync = promisify(fs.exists);
 const existsFlat = file => existsAsync(file);
 // Need to catch since for some reason, sometimes promisify() will not work
 //   properly and will return the first boolean arg of exists() as an error
-const exists = name => magic(abs(name).then(existsFlat).catch(res => res));
+const exists = name => swear(abs(name).then(existsFlat).catch(res => res));
 
 
 
 // Get the home directory: https://stackoverflow.com/a/9081436/938236
-const home = (...args) => magic(join(homedir(), ...args).then(mkdir));
+const home = (...args) => swear(join(homedir(), ...args).then(mkdir));
 
 
 
 // Put several path segments together
 const joinFlat = parts => path.join(...parts);
-const join = (...parts) => abs(magic(parts).then(joinFlat));
+const join = (...parts) => abs(swear(parts).then(joinFlat));
 
 
 
@@ -70,7 +70,7 @@ const list = dir => {
   const readDir = promisify(fs.readdir);
 
   // Map it to make all of the paths absolute
-  return magic([dir])
+  return swear([dir])
     .map(abs)
     .map(file => readDir(file))
     .shift()
@@ -81,8 +81,8 @@ const list = dir => {
 
 // Create a new directory in the specified path
 const mkdirAsync = promisify(fs.mkdir);
-const mkdir = name => magic(abs(name).then(async file => {
-  return magic(file.split(path.sep).map((part, i, all) => {
+const mkdir = name => swear(abs(name).then(async file => {
+  return swear(file.split(path.sep).map((part, i, all) => {
     return all.slice(0, i + 1).join(path.sep);
   }).filter(Boolean).reduce((prom, path) => {
     return prom.then(async () => await exists(path) ? path : mkdirAsync(path))
@@ -93,15 +93,14 @@ const mkdir = name => magic(abs(name).then(async file => {
 
 
 // Get the path's filename
-const nameFlat = path.basename;
-const name = file => magic(magic(file).then(nameFlat));
+const name = file => swear(swear(file).then(path.basename));
 
 
 
 // Delete a file or directory (recursively)
 const removeDirAsync = promisify(fs.rmdir);
 const removeFileAsync = promisify(fs.unlink);
-const remove = name => magic(abs(name).then(async file => {
+const remove = name => swear(abs(name).then(async file => {
   if (file === '/') throw new Error('Cannot remove the root folder `/`');
   if (!await exists(file)) return file;
 
@@ -119,7 +118,7 @@ const remove = name => magic(abs(name).then(async file => {
 
 // Get some interesting info from the path
 const statAsync = promisify(fs.lstat);
-const stat = name => magic(abs(name).then(statAsync).catch(err => {}));
+const stat = name => swear(abs(name).then(statAsync).catch(err => {}));
 
 
 
@@ -146,8 +145,8 @@ const rWalk = name => {
 
 
 // Attempt to make an OS walk, and fallback to the recursive one
-const walk = name => magic(exists(name).then(async isThere => {
-  if (!isThere) return magic([]);
+const walk = name => swear(exists(name).then(async isThere => {
+  if (!isThere) return swear([]);
   if (linux() || mac()) {
     return run(`find ${await abs(name)} -type f`).split('\n').filter(Boolean);
   }
@@ -159,7 +158,7 @@ const walk = name => magic(exists(name).then(async isThere => {
 // Create a new file with the specified contents
 const writeAsync = promisify(fs.writeFile);
 const writeFlat = (file, body) => writeAsync(file, body, 'utf-8');
-const write = (name, body = '') => magic(abs(name).then(async file => {
+const write = (name, body = '') => swear(abs(name).then(async file => {
   await writeAsync(file, body);
   return file;
 }));

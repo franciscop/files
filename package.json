@@ -1,17 +1,21 @@
 {
-  "name": "fs-array",
-  "version": "3.0.0",
+  "name": "files",
+  "version": "1.0.0",
   "description": "Node.js filesystem API easily usable with Promises and arrays",
-  "main": "fs.min.js",
+  "main": "files.min.js",
   "scripts": {
-    "build": "rollup fs.js --name fs --output.format umd | uglifyjs -o fs.min.js",
-    "gzip": "echo $(gzip -c fs.min.js | wc -c) bytes",
+    "build": "rollup files.js --name files --output.format umd | uglifyjs -o files.min.js",
+    "gzip": "echo $(gzip -c files.min.js | wc -c) bytes",
     "test": "npm run build && jest --coverage"
   },
   "keywords": [
+    "files",
     "fs",
     "filesystem",
     "promise",
+    "promises",
+    "async",
+    "await",
     "all"
   ],
   "files": [],
@@ -19,21 +23,22 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/franciscop/fs-array.git"
+    "url": "git+https://github.com/franciscop/files.git"
   },
   "bugs": {
-    "url": "https://github.com/franciscop/fs-array/issues"
+    "url": "https://github.com/franciscop/files/issues"
   },
-  "homepage": "https://github.com/franciscop/fs-array#readme",
+  "homepage": "https://github.com/franciscop/files#readme",
   "dependencies": {
     "atocha": "^1.0.1",
-    "magic-promises": "^1.2.3"
+    "swear": "^1.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-jest": "^21.2.0",
-    "babel-preset-env": "^1.6.1",
+    "babel-preset-env": "^1.7.0",
     "jest": "^23.5.0",
+    "rollup": "^1.1.2",
     "uglify-es": "^3.3.9"
   }
 }

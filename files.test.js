@@ -16,12 +16,12 @@ import {
   tmp,
   walk,
   write
-} from './fs';
+} from './files';
 
 // Native file system and path
-import nfs from 'fs';
+import fs from 'fs';
 import path from 'path';
-import magic from 'magic-promises';
+import swear from 'swear';
 import { promisify } from 'util';
 
 const fake = async (obj, key, value, cb) => {
@@ -42,8 +42,8 @@ describe('abs', () => {
     expect(await abs('demo')).toBe(await join(__dirname, '/demo'));
   });
 
-  it('works with magic()', async () => {
-    expect(await abs(magic('demo'))).toBe(await join(__dirname, '/demo'));
+  it('works with swear()', async () => {
+    expect(await abs(swear('demo'))).toBe(await join(__dirname, '/demo'));
   });
 
   it('get the absolute path of the passed args', async () => {
@@ -65,12 +65,12 @@ describe('cat', () => {
     expect(await cat('demo/readme.md')).toContain('# Hello!');
   });
 
-  it('works with magic()', async () => {
-    expect(await cat(magic('demo/readme.md'))).toContain('# Hello!');
+  it('works with swear()', async () => {
+    expect(await cat(swear('demo/readme.md'))).toContain('# Hello!');
   });
 
   it('is empty if it is not a file', async () => {
-    expect(await cat(magic('demo'))).toBe('');
+    expect(await cat(swear('demo'))).toBe('');
   });
 });
 
@@ -79,17 +79,17 @@ describe('cat', () => {
 describe('dir', () => {
   it('defaults to the current dir', async () => {
     expect(await dir()).toContain('/home/');
-    expect(await dir()).not.toContain('/fs');
+    expect(await dir()).not.toContain('/files');
   });
 
-  it('works with magic()', async () => {
-    expect(await dir(magic('demo/a/b/readme.md'))).toContain('/fs/demo/a/b');
+  it('works with swear()', async () => {
+    expect(await dir(swear('demo/a/b/readme.md'))).toContain('/files/demo/a/b');
   });
 
   it('can put the full folder path', async () => {
-    expect(await dir('demo/a/b/readme.md')).toContain('/fs/demo/a/b');
-    expect(await dir(dir('demo/a/b/readme.md'))).not.toContain('/fs/demo/a/b');
-    expect(await dir(dir(dir('demo/a/b/readme.md')))).not.toContain('/fs/demo/a');
+    expect(await dir('demo/a/b/readme.md')).toContain('/files/demo/a/b');
+    expect(await dir(dir('demo/a/b/readme.md'))).not.toContain('/files/demo/a/b');
+    expect(await dir(dir(dir('demo/a/b/readme.md')))).not.toContain('/files/demo/a');
   });
 
   it('can work with relative paths', async () => {
@@ -101,16 +101,16 @@ describe('dir', () => {
 
 describe('list', () => {
   it('defaults to the current folder', async () => {
-    expect(await list()).toContain(__dirname + '/fs.js');
+    expect(await list()).toContain(__dirname + '/files.js');
   });
 
-  it('works with magic()', async () => {
-    expect(await list(magic(process.cwd()))).toContain(__dirname + '/fs.js');
+  it('works with swear()', async () => {
+    expect(await list(swear(process.cwd()))).toContain(__dirname + '/files.js');
   });
 
   it('can load the demo', async () => {
     const files = await list('demo', __dirname);
-    expect(files).not.toContain(__dirname + '/fs.js');
+    expect(files).not.toContain(__dirname + '/files.js');
     expect(files).toContain(__dirname + '/demo/a');
     expect(files).toContain(__dirname + '/demo/readme.md');
   });
@@ -123,7 +123,7 @@ describe('exists', () => {
     expect(await exists()).toBe(true);
   });
 
-  it('works with magic()', async () => {
+  it('works with swear()', async () => {
     expect(await exists()).toBe(true);
   });
 
@@ -143,8 +143,8 @@ describe('home', () => {
     expect(await home()).toMatch(/^\/home\//);
   });
 
-  it('works with magic()', async () => {
-    expect(await home(magic(''))).toMatch(/^\/home\//);
+  it('works with swear()', async () => {
+    expect(await home(swear(''))).toMatch(/^\/home\//);
   });
 });
 
@@ -155,16 +155,16 @@ describe('join', () => {
     expect(await join(__dirname, 'demo')).toBe(path.join(__dirname, 'demo'));
   });
 
-  it('works with magic()', async () => {
-    expect(await join(magic(__dirname), magic('demo'))).toBe(path.join(__dirname, 'demo'));
+  it('works with swear()', async () => {
+    expect(await join(swear(__dirname), swear('demo'))).toBe(path.join(__dirname, 'demo'));
   });
 });
 
 
 
 describe('mkdir', () => {
-  beforeEach(async () => promisify(nfs.rmdir)(await abs('demo/b')).catch(err => {}));
-  afterEach(async () => promisify(nfs.rmdir)(await abs('demo/b')).catch(err => {}));
+  beforeEach(async () => promisify(fs.rmdir)(await abs('demo/b')).catch(err => {}));
+  afterEach(async () => promisify(fs.rmdir)(await abs('demo/b')).catch(err => {}));
 
   it('create a new directory', async () => {
     expect(await exists('demo/b')).toBe(false);
@@ -197,8 +197,8 @@ describe('name', () => {
     expect(await name('demo/abs.js')).toBe('abs.js');
   });
 
-  it('works with magic()', async () => {
-    expect(await name(magic('demo/abs.js'))).toBe('abs.js');
+  it('works with swear()', async () => {
+    expect(await name(swear('demo/abs.js'))).toBe('abs.js');
     expect(await name(abs('demo/abs.js'))).toBe('abs.js');
   });
 
@@ -270,9 +270,9 @@ describe('stat', () => {
     expect(await stat(__dirname).isDirectory()).toBe(true);
   });
 
-  it('works with magic()', async () => {
-    expect(await stat(magic(process.cwd())).isDirectory()).toBe(true);
-    expect(await stat(magic(__dirname)).isDirectory()).toBe(true);
+  it('works with swear()', async () => {
+    expect(await stat(swear(process.cwd())).isDirectory()).toBe(true);
+    expect(await stat(swear(__dirname)).isDirectory()).toBe(true);
   });
 
   it('can analyze whether a path is a directory or not', async () => {
@@ -295,8 +295,8 @@ describe('tmp', () => {
     expect(await tmp()).toBe('/tmp');
   });
 
-  it('works with magic()', async () => {
-    expect(await tmp(magic('demo'))).toBe('/tmp/demo');
+  it('works with swear()', async () => {
+    expect(await tmp(swear('demo'))).toBe('/tmp/demo');
   });
 
   it('works with a path', async () => {
@@ -317,11 +317,11 @@ describe('tmp', () => {
 
 describe('walk', () => {
   it('defaults to the current directory', async () => {
-    expect(await walk()).toContain(__dirname + '/fs.js');
+    expect(await walk()).toContain(__dirname + '/files.js');
   });
 
-  it('works with magic()', async () => {
-    expect(await walk(magic(process.cwd()))).toContain(__dirname + '/fs.js');
+  it('works with swear()', async () => {
+    expect(await walk(swear(process.cwd()))).toContain(__dirname + '/files.js');
   });
 
   it('is empty if it doesn not exist', async () => {
@@ -357,8 +357,8 @@ describe('walk', () => {
 
 
 describe('write', () => {
-  beforeEach(async () => promisify(nfs.unlink)(await abs('demo/deleteme.md')).catch(err => {}));
-  afterEach(async () => promisify(nfs.unlink)(await abs('demo/deleteme.md')).catch(err => {}));
+  beforeEach(async () => promisify(fs.unlink)(await abs('demo/deleteme.md')).catch(err => {}));
+  afterEach(async () => promisify(fs.unlink)(await abs('demo/deleteme.md')).catch(err => {}));
 
   it('creates a new file', async () => {
     expect(await exists('demo/deleteme.md')).toBe(false);
