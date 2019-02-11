@@ -16,7 +16,7 @@ console.log(readmes);
 
 Files is a better `fs` filesystem:
 
-- Works with **`'utf-8'`**, as things should be.
+- Works with **`'utf-8'`** by default.
 - Uses **Promises** and works as expected with async/await.
 - Exteds promises [with `swear`](https://github.com/franciscop/swear) so you can chain operations easily.
 - **Absolute paths** with the root as the running script.
