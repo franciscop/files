@@ -1,6 +1,6 @@
 {
   "name": "files",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Node.js filesystem API easily usable with Promises and arrays",
   "main": "files.min.js",
   "scripts": {
