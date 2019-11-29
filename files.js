@@ -153,7 +153,7 @@ const walk = name => swear(exists(name).then(async isThere => {
         const result = await run(`find ${await abs(name)} -type f`);
         return result.split('\n').filter(Boolean);
     }
-    catch {
+    catch (error) {
         // Ignore error and fallback to rWalk()
     }
   }
