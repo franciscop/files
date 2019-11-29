@@ -29,7 +29,7 @@ import { promisify } from "util";
 const mac = () => process.platform === "darwin";
 const linux = () => process.platform === "linux";
 
-const root = linux() ? "/home/" : mac() ? "/Users/" : "C:\\Users";
+const root = linux() ? "/home/" : mac() ? "/Users/" : "C:\\projects";
 
 console.log("ENV:", process.platform);
 
