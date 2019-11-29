@@ -150,8 +150,8 @@ const walk = name => swear(exists(name).then(async isThere => {
   if (linux() || mac()) {
     try {
         // Attempt to invoke run (command may fail for large directories)
-        const run = run(`find ${await abs(name)} -type f`);
-        return run.split('\n').filter(Boolean);
+        const result = await run(`find ${await abs(name)} -type f`);
+        return result.split('\n').filter(Boolean);
     }
     catch {
         // Ignore error and fallback to rWalk()
