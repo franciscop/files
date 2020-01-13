@@ -1,6 +1,6 @@
 {
   "name": "files",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Filesystem API easily usable with Promises and arrays",
   "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
   "main": "files.min.js",
