@@ -190,3 +190,22 @@ export {
   walk,
   write
 };
+
+export default {
+  abs,
+  cat,
+  dir,
+  exists,
+  home,
+  join,
+  list,
+  ls: list,
+  mkdir,
+  name,
+  read: cat,
+  remove,
+  stat,
+  tmp,
+  walk,
+  write
+};
