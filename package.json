@@ -1,12 +1,15 @@
 {
   "name": "files",
   "version": "1.0.1",
-  "description": "Node.js filesystem API easily usable with Promises and arrays",
+  "description": "Filesystem API easily usable with Promises and arrays",
+  "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
   "main": "files.min.js",
+  "license": "MIT",
   "scripts": {
     "build": "rollup files.js --name files --output.format umd | uglifyjs -o files.min.js",
-    "gzip": "echo $(gzip -c files.min.js | wc -c) bytes",
-    "test": "npm run build && jest --coverage"
+    "size": "echo $(gzip -c files.min.js | wc -c) bytes",
+    "pretest": "npm run build",
+    "test": "jest --coverage"
   },
   "keywords": [
     "files",
@@ -19,8 +22,6 @@
     "all"
   ],
   "files": [],
-  "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
-  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/franciscop/files.git"

@@ -31,8 +31,6 @@ const linux = () => process.platform === "linux";
 
 const root = linux() ? "/home/" : mac() ? "/Users/" : "C:\\projects";
 
-console.log("ENV:", process.platform);
-
 const fake = async (obj, key, value, cb) => {
   const init = obj[key];
   Object.defineProperty(obj, key, { value, writable: true });
