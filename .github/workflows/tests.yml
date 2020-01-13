@@ -1,4 +1,4 @@
-name: Test JS Package
+name: tests
 
 on: [push]
 
