@@ -67,19 +67,15 @@ const list = swear(async dir => {
 const mkdirAsync = promisify(fs.mkdir);
 const mkdir = swear(async name => {
   name = await abs(name);
-  await name
+  const list = name
     .split(path.sep)
-    .map((part, i, all) => {
-      return all.slice(0, i + 1).join(path.sep);
-    })
-    .filter(Boolean)
-    // Build each nested path sequentially
-    .reduce((prom, path) => {
-      return prom.then(async () => {
-        if (await exists(path)) return;
-        return mkdirAsync(path).catch(err => {});
-      });
-    }, Promise.resolve());
+    .map((part, i, all) => all.slice(0, i + 1).join(path.sep))
+    .filter(Boolean);
+  // Build each nested path sequentially
+  for (let path of list) {
+    if (await exists(path)) continue;
+    await mkdirAsync(path).catch(err => {});
+  }
   return name;
 });
 
