@@ -65,27 +65,23 @@ const list = swear(async dir => {
 
 // Create a new directory in the specified path
 const mkdirAsync = promisify(fs.mkdir);
-const mkdir = name =>
-  swear(
-    abs(name).then(async file => {
-      return swear(
-        file
-          .split(path.sep)
-          .map((part, i, all) => {
-            return all.slice(0, i + 1).join(path.sep);
-          })
-          .filter(Boolean)
-          .reduce((prom, path) => {
-            return prom
-              .then(async () =>
-                (await exists(path)) ? path : mkdirAsync(path)
-              )
-              .catch(err => {})
-              .then(() => file);
-          }, Promise.resolve())
-      );
+const mkdir = swear(async name => {
+  name = await abs(name);
+  await name
+    .split(path.sep)
+    .map((part, i, all) => {
+      return all.slice(0, i + 1).join(path.sep);
     })
-  );
+    .filter(Boolean)
+    // Build each nested path sequentially
+    .reduce((prom, path) => {
+      return prom.then(async () => {
+        if (await exists(path)) return;
+        return mkdirAsync(path).catch(err => {});
+      });
+    }, Promise.resolve());
+  return name;
+});
 
 // Get the path's filename
 const name = swear(file => path.basename(file));
