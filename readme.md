@@ -371,10 +371,10 @@ console.log(await stat('readme.md').atime);
 ### tmp()
 
 ```js
-tmp(arg1:string, arg2:string, ...) => Promise(:string)
+tmp(arg1:string) => Promise(:string)
 ```
 
-Find the temporary directory. If arguments are passed, find the specified directory inside the tmp folder:
+Find the temporary directory. Find a subfolder if an argument is passed:
 
 ```js
 console.log(await tmp());
@@ -383,7 +383,7 @@ console.log(await tmp());
 console.log(await tmp('demo'));
 // /tmp/demo/
 
-console.log(await tmp('demo', 'a'));
+console.log(await tmp('demo/a'));
 // /tmp/demo/a/
 ```
 

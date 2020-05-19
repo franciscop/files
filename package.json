@@ -7,10 +7,11 @@
   "main": "files.min.js",
   "license": "MIT",
   "scripts": {
-    "build": "rollup files.js --name files --output.format umd | uglifyjs -o files.min.js",
+    "build": "rollup files.js --name files --output.format esm | uglifyjs -o files.min.js && npm run size",
     "size": "echo $(gzip -c files.min.js | wc -c) bytes",
     "pretest": "npm run build",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "watch": "jest --watchAll"
   },
   "keywords": [
     "files",
@@ -33,7 +34,7 @@
   "homepage": "https://github.com/franciscop/files#readme",
   "dependencies": {
     "atocha": "^1.0.1",
-    "swear": "^1.0.0"
+    "swear": "^1.1.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
