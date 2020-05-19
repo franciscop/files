@@ -82,7 +82,14 @@ describe("cat", () => {
 describe("dir", () => {
   it("defaults to the current dir", async () => {
     expect(await dir()).toContain(root);
-    expect(await dir()).toBe(await cmd('pwd').replace(/\/files\/?$/, ''));
+    expect(await dir()).toBe(await cmd("pwd").replace(/\/files\/?$/, ""));
+  });
+
+  it("returns the parent if already a path", async () => {
+    expect(await dir("demo/a")).toContain("/files/demo");
+    expect(await dir("demo/a")).not.toContain("/files/demo/a");
+    expect(await dir("demo/a/")).toContain("/files/demo");
+    expect(await dir("demo/a/")).not.toContain("/files/demo/a");
   });
 
   it("works with swear()", async () => {

@@ -1,4 +1,6 @@
-# 📁 Files [![npm install files](https://img.shields.io/badge/npm%20install-files-blue.svg)](https://www.npmjs.com/package/files) [![test badge](https://github.com/franciscop/files/workflows/tests/badge.svg)](https://github.com/franciscop/files/blob/master/files.test.js)
+# 📁 Files [![npm install files](https://img.shields.io/badge/npm%20install-files-blue.svg)](https://www.npmjs.com/package/files) [![test badge](https://github.com/franciscop/files/workflows/tests/badge.svg)](https://github.com/franciscop/files/actions)
+
+> Note: since 2.0 we use ESM (`import files from "files";`) which is compatible with recent Node.js versions. If you prefer the `require()` way, please `npm install files@1`.
 
 Node.js filesystem API easily usable with Promises and arrays:
 
@@ -18,13 +20,17 @@ Files is a better `fs` filesystem:
 
 - Works with **`'utf-8'`** by default.
 - Uses **Promises** and works as expected with async/await.
-- Exteds promises [with `swear`](https://github.com/franciscop/swear) so you can chain operations easily.
+- Extends promises [with `swear`](https://github.com/franciscop/swear) so you can chain operations easily.
 - **Absolute paths** with the root as the running script.
 - Ignores **the second parameter** if it's not an object so you can work with arrays better like `.map(read)`.
+
+It's an ideal library if you have to build scripts with many file and folder operations since it's made to simplify those.
 
 
 
 ## Documentation
+
+All of the methods **return a promise** ([using `swear`](#swear-package)):
 
 |function            |description                                             |
 |--------------------|--------------------------------------------------------|
@@ -49,21 +55,22 @@ Files is a better `fs` filesystem:
 
 
 
-### Swear
+### Swear package
 
-Any method that specifies an output of `:Promise(type)`, it will be following [`swear` specification](https://github.com/franciscop/swear) promise extension. These are fully compatible with native promises:
+All of the methods [follow the `swear`](https://github.com/franciscop/swear) promise extension. These are fully compatible with native promises:
 
 ```js
+// Using it as normal promises
 const all = await list('demo');
-const files = all.filter(file => !/node_modules/.test(file));
-// ['a.js', 'b.js', ...] (all of the files and folders except node_modules)
+const devFiles = all.filter(file => !/node_modules/.test(file));
+// ['a.js', 'b.js', ...]
 ```
 
-Or with the swear workflow, you can use it as the type inside `:Promise(type)`, and then `await` for the final value:
+With the swear workflow, you can apply operations on the promise that will be queued and run on the eventual value:
 
 ```js
-const files = await list(__dirname).filter(file => !/node_modules/.test(file));
-// ['a.js', 'b.js', ...] (all of the files and folders except node_modules)
+const devFiles = await list('demo').filter(file => !/node_modules/.test(file));
+// ['a.js', 'b.js', ...]
 ```
 
 See how we applied the `.filter()` straight into the output of `list(__dirname)`. Then we have to await for the whole thing to resolve since `list()` is async. If this seems a bit confusing, read along the examples and try it yourself.
@@ -81,10 +88,10 @@ Retrieve the absolute path of the passed argument relative of the directory runn
 ```js
 // cd ~/me/projects/files/ && node index.js
 
-console.log(abs('demo'));
+console.log(await abs('demo'));
 // /home/me/projects/files/demo
 
-console.log(abs('../../Documents'));
+console.log(await abs('../../Documents'));
 // /home/me/Documents
 ```
 
@@ -96,26 +103,26 @@ You can pass a second parameter to specify any base directory different from the
 // cd ~/me/projects/files && node ./demo/abs.js
 
 // default; Relative to the place where the script is run
-console.log(abs('demo'));
+console.log(await abs('demo'));
 // /home/me/projects/files/demo
 
 // default; relative to the console location where the script is run
-console.log(abs('demo', process.cwd()));
+console.log(await abs('demo', process.cwd()));
 // /home/me/projects/files/demo
 
 // relative to the current directory (./demo)
-console.log(abs('demo', __dirname));
+console.log(await abs('demo', __dirname));
 // /home/me/projects/files/demo/demo
 
 // relative to the user's home directory https://stackoverflow.com/q/9080085
-console.log(abs('demo', require('os').homedir()));
+console.log(await abs('demo', require('os').homedir()));
 // /home/me/demo
 ```
 
 If the second parameter is undefined, or if it's *not a string*, it will be completely ignored and the default of the current running dir will be used. This is great for looping on arrays or similar:
 
 ```js
-console.log(['a', 'b'].map(abs));
+console.log(await ls('demo').map(abs));
 // [ '/home/me/projects/files/a', '/home/me/projects/files/b' ]
 ```
 
@@ -133,19 +140,28 @@ console.log(['a', 'b'].map(abs));
 dir(path:string) => :string
 ```
 
-Get the directory of the passed path:
+Returns the directory of the passed path:
 
 ```js
-console.log(name('~/hello/world.js'));
+console.log(await dir('~/hello/world.js'));
 // /home/me/hello
 ```
+
+If the path is already a directory, it returns the one that contains it; its parent:
+
+```js
+console.log(await dir('~/hello/'));
+// /home/me
+```
+
+
 
 
 
 ### exists()
 
 ```js
-exists(path:string) => :Promise(:boolean)
+exists(path:string) => :boolean
 ```
 
 Check whenever a file or folder exists:
@@ -158,13 +174,20 @@ console.log(await exists('non-existing.md'));
 // false
 ```
 
-This *cannot* (yet) be used with `.filter()`, since `.filter()` is sync and doesn't expect an array of promises to be returned.
+This *cannot* be used with `.filter()`, since in JS `.filter()` is sync and doesn't expect an array of promises to be returned.
 
 To filter based on whether it exists or not, extend it to an array of promises, then filter that asynchronously and finally retrieve the original file:
 
 ```js
 const keeper = file => exists(file).then(keep => keep && file);
-console.log(await ['a.md', 'b.md'].map(keeper).filter(file => file));
+const existing = await Promise.all(['a.md', 'b.md'].map(keeper));
+console.log(existing.filter(file => file));
+```
+
+> **Swear interface**: you can use `swear` to make your life a bit easier with its `.filter()`, which accepts promises:
+
+```js
+console.log(await swear(['a.md', 'b.md']).filter(exists));
 ```
 
 
@@ -172,7 +195,7 @@ console.log(await ['a.md', 'b.md'].map(keeper).filter(file => file));
 ### home()
 
 ```js
-home(arg1:string, arg2:string, ...) => Promise(:string)
+home(arg1:string, arg2:string, ...) => :string
 ```
 
 Find the home directory if called without arguments, or the specified directory inside the home folder as specified in the arguments.
@@ -209,7 +232,7 @@ join(arg1:string, arg2:string, ...) => :string
 Put several path segments together in a cross-browser way and return the absolute path:
 
 ```js
-console.log(join('demo', 'a'));
+console.log(await join('demo', 'a'));
 // /home/me/projects/files/demo/a
 ```
 
@@ -218,7 +241,7 @@ console.log(join('demo', 'a'));
 ### list()
 
 ```js
-list(path=process.cwd():string) => :Promise(:Array(:string))
+list(path=process.cwd():string) => :Array(:string)
 ```
 
 Get all of the files and folders of the specified directory into an array:
@@ -258,7 +281,7 @@ Related methods:
 ### mkdir()
 
 ```js
-mkdir(path:string) => :Promise(:string)
+mkdir(path:string) => :string
 ```
 
 Create the specified directory. If it already exists, do nothing. Returns the directory that was created.
@@ -287,7 +310,7 @@ name(path:string) => :string
 Get the filename of the passed path:
 
 ```js
-console.log(name('~/hello/world.js'));
+console.log(await name('~/hello/world.js'));
 // world.js
 ```
 
@@ -296,7 +319,7 @@ console.log(name('~/hello/world.js'));
 ### read()
 
 ```js
-read(path:string) => :Promise(:string)
+read(path:string) => :string
 ```
 
 Read the specified file contents into a string:
@@ -310,11 +333,13 @@ File reads are relative as always to the executing script. It expects a single a
 
 ```js
 // Read two files manually
-console.log(await ['a.md', 'b.md'].map(read));
+console.log(await Promise.all(['a.md', 'b.md'].map(read)));
 // ['# A', '# B']
 
-// Read all markdown files in all subfolders
-console.log(await walk().filter(file => /\.md/.test(file)).map(read));
+// Read all markdown files in all subfolders:
+const allFiles = await walk();
+const mdFiles = allFiles.filter(file => /\.md$/.test(file));
+console.log(await Promise.all(mdFiles.map(read)));
 // ['# A', '# B', ...]
 ```
 
@@ -322,8 +347,12 @@ It also follows the `swear` specification, so you can perform any normal string 
 
 ```js
 // Find all the secondary headers in a markdown file
-console.log(await read('readme.md').split('\n').filter(l => /^##\s+/.test(l)));
+console.log(await read('readme.md').split('\n').filter(/^##\s+/));
 // ['## cat()', '## dir()', ...]
+
+// Read all markdown files in all subfolders
+console.log(await walk().filter(/\.md$/).map(read)));
+// ['# A', '# B', ...]
 ```
 
 
@@ -331,9 +360,8 @@ console.log(await read('readme.md').split('\n').filter(l => /^##\s+/.test(l)));
 ### remove()
 
 ```js
-remove(path:string) => :Promise(:string)
+remove(path:string) => :string
 ```
-
 
 Remove a file or folder (recursively) and return the absolute path that was removed
 
@@ -345,12 +373,20 @@ console.log(await remove('~/old-project'));
 // /home/me/old-project
 ```
 
+Please be careful when using this, since there is no way of recovering deleted files.
+
 
 
 ### stat()
 
-```js
-stat(path:string) => :Promise(:object)
+```ts
+stat(path:string) => :Object({
+  isDirectory:fn,
+  isFile:fn,
+  atime:string,
+  mtime:string,
+  ...
+})
 ```
 
 Get some information about the current path:
@@ -368,10 +404,33 @@ console.log(await stat('readme.md').atime);
 
 
 
+### swear()
+
+```js
+swear(arg:any) => :any
+```
+
+This [is **the `swear` package**](https://www.npmjs.com/package/swear) exported here for convenience. It allows you to chain promises using the underlying value methods for convenience.
+
+Example: reading some specific files if they exist **without** swear:
+
+```js
+const keeper = file => exists(file).then(keep => keep && file);
+const existing = await Promise.all(['a.md', 'b.md'].map(keeper));
+console.log(existing.filter(Boolean).map(read));
+```
+
+Reading the same files if they exist **with** swear:
+
+```js
+console.log(await swear(['a.md', 'b.md']).filter(exists).map(read));
+```
+
+
 ### tmp()
 
 ```js
-tmp(arg1:string) => Promise(:string)
+tmp(arg1:string) => :string
 ```
 
 Find the temporary directory. Find a subfolder if an argument is passed:
@@ -389,7 +448,7 @@ console.log(await tmp('demo/a'));
 
 It will create the specified folder if it does not exist yet.
 
-To make sure the new folder is empty, you can call `remove()` and `mkdir()` consecutively:
+To reuse a temp folder and make sure it's empty on each usage, you can call `remove()` and `mkdir()` consecutively:
 
 ```js
 const dir = await tmp('demo').then(remove).then(mkdir);
@@ -402,7 +461,7 @@ console.log(dir);
 ### walk()
 
 ```js
-walk(path:string) => :Promise(:Array(:string))
+walk(path:string) => :Array(:string)
 ```
 
 Recursively list all of the files from the specified folder:
@@ -426,7 +485,7 @@ console.log(await walk('demo').filter(file => /\.md$/.test(file)).map(read));
 ### write()
 
 ```js
-write(path:string, content:string) => :Promise(:string)
+write(path:string, content:string) => :string
 ```
 
 Create a new file or put data into a file that already exists. Returns the path of the file:

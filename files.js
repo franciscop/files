@@ -64,13 +64,18 @@ const list = swear(async dir => {
 });
 
 // Create a new directory in the specified path
+// Note: `recursive` flag on Node.js is ONLY for Mac and Windows (not Linux), so
+// it's totally worthless for us
 const mkdirAsync = promisify(fs.mkdir);
 const mkdir = swear(async name => {
   name = await abs(name);
+
+  // Create a recursive list of paths to create, from the highest to the lowest
   const list = name
     .split(path.sep)
     .map((part, i, all) => all.slice(0, i + 1).join(path.sep))
     .filter(Boolean);
+
   // Build each nested path sequentially
   for (let path of list) {
     if (await exists(path)) continue;
@@ -169,6 +174,7 @@ const files = {
   read: cat,
   remove,
   stat,
+  swear,
   tmp,
   walk,
   write
@@ -188,6 +194,7 @@ export {
   cat as read,
   remove,
   stat,
+  swear,
   tmp,
   walk,
   write
