@@ -35,7 +35,7 @@ const linux = () => process.platform === "linux";
 const windows = () => process.platform === "win32";
 const unix = () => mac() || linux();
 
-const root = linux() ? "/home/" : mac() ? "/Users/" : "C:\\Users\\appveyor";
+const root = linux() ? "/home/" : mac() ? "/Users/" : "C:\\projects";
 
 const fake = async (obj, key, value, cb) => {
   const init = obj[key];
@@ -117,8 +117,8 @@ describe("dir", () => {
   });
 
   it("can work with relative paths", async () => {
-    expect(await dir("../")).toBe(
-      await abs("../")
+    expect(await dir("./demo/")).toBe(
+      await abs("./demo/")
         .replace(/(\/|\\)$/, "")
         .split(sep)
         .slice(0, -1)
@@ -141,8 +141,8 @@ describe("list", () => {
   it("can load the demo", async () => {
     const files = await list("demo", __dirname);
     expect(files).not.toContain(__dirname + sep + "files.js");
-    expect(files).toContain(__dirname + sep + "demo/a");
-    expect(files).toContain(__dirname + sep + "demo/readme.md");
+    expect(files).toContain(__dirname + sep + `demo${sep}a`);
+    expect(files).toContain(__dirname + sep + `demo${sep}readme.md`);
   });
 });
 
@@ -170,7 +170,7 @@ describe("home", () => {
   });
 
   it("works with swear()", async () => {
-    expect(await home(swear(""))).toContain(root);
+    expect(await home(swear(""))).toContain(await cmd(homeDir));
   });
 });
 
