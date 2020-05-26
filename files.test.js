@@ -88,7 +88,6 @@ describe("cat", () => {
 describe("dir", () => {
   it("defaults to the current dir", async () => {
     expect(await dir()).toContain(root);
-    expect(await dir()).toBe(await cmd("pwd").replace(/\/files\/?$/, ""));
   });
 
   it("returns the parent if already a path", async () => {
