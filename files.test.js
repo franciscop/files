@@ -32,8 +32,10 @@ const __filename = __dirname + sep + "files.test.js";
 // Find whether it's Linux or Mac, where we can use `find`
 const mac = () => process.platform === "darwin";
 const linux = () => process.platform === "linux";
+const windows = () => process.platform === "win32";
+const unix = () => mac() || linux();
 
-const root = linux() ? "/home/" : mac() ? "/Users/" : "C:\\projects";
+const root = linux() ? "/home/" : mac() ? "/Users/" : "C:\\Users\\appveyor";
 
 const fake = async (obj, key, value, cb) => {
   const init = obj[key];
@@ -90,51 +92,57 @@ describe("dir", () => {
   });
 
   it("returns the parent if already a path", async () => {
-    expect(await dir("demo/a")).toContain("/files/demo");
-    expect(await dir("demo/a")).not.toContain("/files/demo/a");
-    expect(await dir("demo/a/")).toContain("/files/demo");
-    expect(await dir("demo/a/")).not.toContain("/files/demo/a");
+    expect(await dir("demo/a")).toContain(`files${sep}demo`);
+    expect(await dir("demo/a")).not.toContain(`files${sep}demo${sep}a`);
+    expect(await dir("demo/a/")).toContain(`files${sep}demo`);
+    expect(await dir("demo/a/")).not.toContain(`files${sep}demo${sep}a`);
   });
 
   it("works with swear()", async () => {
-    expect(await dir(swear("demo/a/b/readme.md"))).toContain("/files/demo/a/b");
+    expect(await dir(swear("demo/a/b/readme.md"))).toContain(
+      `files${sep}demo${sep}a${sep}b`
+    );
   });
 
   it("can put the full folder path", async () => {
-    expect(await dir("demo/a/b/readme.md")).toContain("/files/demo/a/b");
+    expect(await dir("demo/a/b/readme.md")).toContain(
+      `files${sep}demo${sep}a${sep}b`
+    );
     expect(await dir(dir("demo/a/b/readme.md"))).not.toContain(
-      "/files/demo/a/b"
+      `files${sep}demo${sep}a${sep}b`
     );
     expect(await dir(dir(dir("demo/a/b/readme.md")))).not.toContain(
-      "/files/demo/a"
+      `files${sep}demo${sep}a`
     );
   });
 
   it("can work with relative paths", async () => {
     expect(await dir("../")).toBe(
       await abs("../")
-        .replace(/\/$/, "")
-        .split("/")
+        .replace(/(\/|\\)$/, "")
+        .split(sep)
         .slice(0, -1)
-        .join("/")
+        .join(sep)
     );
   });
 });
 
 describe("list", () => {
   it("defaults to the current folder", async () => {
-    expect(await list()).toContain(__dirname + "/files.js");
+    expect(await list()).toContain(__dirname + sep + "files.js");
   });
 
   it("works with swear()", async () => {
-    expect(await list(swear(process.cwd()))).toContain(__dirname + "/files.js");
+    expect(await list(swear(process.cwd()))).toContain(
+      __dirname + sep + "files.js"
+    );
   });
 
   it("can load the demo", async () => {
     const files = await list("demo", __dirname);
-    expect(files).not.toContain(__dirname + "/files.js");
-    expect(files).toContain(__dirname + "/demo/a");
-    expect(files).toContain(__dirname + "/demo/readme.md");
+    expect(files).not.toContain(__dirname + sep + "files.js");
+    expect(files).toContain(__dirname + sep + "demo/a");
+    expect(files).toContain(__dirname + sep + "demo/readme.md");
   });
 });
 
@@ -156,8 +164,9 @@ describe("exists", () => {
 });
 
 describe("home", () => {
+  const homeDir = unix() ? "echo $HOME" : "echo %systemdrive%%homepath%";
   it("uses the home directory", async () => {
-    expect(await home()).toEqual(await cmd("echo $HOME"));
+    expect(await home()).toEqual(await cmd(homeDir));
   });
 
   it("works with swear()", async () => {
@@ -347,9 +356,9 @@ describe("tmp", () => {
         (await cmd("echo $TMPDIR")) + "demo/a"
       ]);
     } else {
-      expect(await tmp("demo").then(ls)).toBe(
+      expect(await tmp("demo").then(ls)).toEqual([
         "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\demo\\a"
-      );
+      ]);
     }
     await tmp("demo")
       .then(remove)
@@ -360,11 +369,13 @@ describe("tmp", () => {
 
 describe("walk", () => {
   it("defaults to the current directory", async () => {
-    expect(await walk()).toContain(__dirname + "/files.js");
+    expect(await walk()).toContain(__dirname + sep + "files.js");
   });
 
   it("works with swear()", async () => {
-    expect(await walk(swear(process.cwd()))).toContain(__dirname + "/files.js");
+    expect(await walk(swear(process.cwd()))).toContain(
+      __dirname + sep + "files.js"
+    );
   });
 
   it("is empty if it doesn not exist", async () => {
@@ -373,27 +384,11 @@ describe("walk", () => {
 
   it("can deep walk", async () => {
     const files = await walk("demo");
-    expect(files).toContain(__dirname + "/demo/readme.md");
-    expect(files).toContain(__dirname + "/demo/a/readme.md");
-    expect(files).toContain(__dirname + "/demo/a/b/readme.md");
-  });
-
-  it("can deep walk on Windows", async () => {
-    return fake(process, "platform", "win32", async () => {
-      const files = await walk("demo");
-      expect(files).toContain(__dirname + "/demo/readme.md");
-      expect(files).toContain(__dirname + "/demo/a/readme.md");
-      expect(files).toContain(__dirname + "/demo/a/b/readme.md");
-    });
-  });
-
-  it("can deep walk on Mac", async () => {
-    return fake(process, "platform", "darwin", async () => {
-      const files = await walk("demo");
-      expect(files).toContain(__dirname + "/demo/readme.md");
-      expect(files).toContain(__dirname + "/demo/a/readme.md");
-      expect(files).toContain(__dirname + "/demo/a/b/readme.md");
-    });
+    expect(files).toContain(__dirname + sep + `demo${sep}readme.md`);
+    expect(files).toContain(__dirname + sep + `demo${sep}a${sep}readme.md`);
+    expect(files).toContain(
+      __dirname + sep + `demo${sep}a${sep}b${sep}readme.md`
+    );
   });
 });
 
@@ -426,7 +421,7 @@ describe("other tests", () => {
 
   it("can walk and filter and map", async () => {
     const files = await walk("demo")
-      .filter(file => /\/readme\.md$/.test(file))
+      .filter(file => /readme\.md$/.test(file))
       .map(read);
 
     expect(files).toContain("# Sub-sub-level\n");
