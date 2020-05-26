@@ -12,6 +12,7 @@ import {
   name,
   remove,
   read,
+  sep,
   stat,
   tmp,
   walk,
@@ -26,7 +27,7 @@ import cmd from "atocha";
 import { promisify } from "util";
 
 const __dirname = process.cwd();
-const __filename = __dirname + "/files.test.js";
+const __filename = __dirname + sep + "files.test.js";
 
 // Find whether it's Linux or Mac, where we can use `find`
 const mac = () => process.platform === "darwin";

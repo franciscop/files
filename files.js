@@ -105,6 +105,8 @@ const remove = swear(async name => {
   return name;
 });
 
+const sep = path.sep;
+
 // Get some interesting info from the path
 const statAsync = promisify(fs.lstat);
 const stat = swear(async name => {
@@ -173,6 +175,7 @@ const files = {
   name,
   read: cat,
   remove,
+  sep,
   stat,
   swear,
   tmp,
@@ -193,6 +196,7 @@ export {
   name,
   cat as read,
   remove,
+  sep,
   stat,
   swear,
   tmp,
