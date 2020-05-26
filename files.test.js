@@ -26,8 +26,11 @@ import swear from "swear";
 import cmd from "atocha";
 import { promisify } from "util";
 
-const __dirname = process.cwd();
-const __filename = __dirname + sep + "files.test.js";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Find whether it's Linux or Mac, where we can use `find`
 const mac = () => process.platform === "darwin";

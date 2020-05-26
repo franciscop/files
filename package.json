@@ -43,6 +43,7 @@
     "uglify-es": "^3.3.9"
   },
   "jest": {
+    "transform": {},
     "testEnvironment": "jest-environment-node"
   }
 }
