@@ -6,7 +6,7 @@
   "funding": "https://www.paypal.me/franciscopresencia/19",
   "license": "MIT",
   "scripts": {
-    "build": "rollup files.js --name files --output.format esm | uglifyjs -o files.min.js && npm run size",
+    "build": "rollup files.js --name files --output.format esm | uglifyjs -o files.min.js",
     "size": "echo $(gzip -c files.min.js | wc -c) bytes",
     "pretest": "npm run build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
