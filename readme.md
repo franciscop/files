@@ -5,7 +5,7 @@
 Node.js filesystem API easily usable with Promises and arrays:
 
 ```js
-const { read, walk } = require('files');
+import { read, walk } from 'files';
 
 // Find all of the readmes
 const readmes = await walk('demo')
@@ -73,7 +73,7 @@ const devFiles = await list('demo').filter(file => !/node_modules/.test(file));
 // ['a.js', 'b.js', ...]
 ```
 
-See how we applied the `.filter()` straight into the output of `list(__dirname)`. Then we have to await for the whole thing to resolve since `list()` is async. If this seems a bit confusing, read along the examples and try it yourself.
+See how we applied the `.filter()` straight into the output of `list()`. Then we have to await for the whole thing to resolve since `list()` is async. If this seems a bit confusing, read along the examples and try it yourself.
 
 
 
@@ -111,12 +111,8 @@ console.log(await abs('demo', process.cwd()));
 // /home/me/projects/files/demo
 
 // relative to the current directory (./demo)
-console.log(await abs('demo', __dirname));
+console.log(await abs('demo', import.meta.url));
 // /home/me/projects/files/demo/demo
-
-// relative to the user's home directory https://stackoverflow.com/q/9080085
-console.log(await abs('demo', require('os').homedir()));
-// /home/me/demo
 ```
 
 If the second parameter is undefined, or if it's *not a string*, it will be completely ignored and the default of the current running dir will be used. This is great for looping on arrays or similar:

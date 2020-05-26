@@ -16,7 +16,7 @@ import {
   tmp,
   walk,
   write
-} from "./files";
+} from ".";
 
 // Native file system and path
 import fs from "fs";
@@ -24,6 +24,9 @@ import path from "path";
 import swear from "swear";
 import cmd from "atocha";
 import { promisify } from "util";
+
+const __dirname = process.cwd();
+const __filename = __dirname + "/files.test.js";
 
 // Find whether it's Linux or Mac, where we can use `find`
 const mac = () => process.platform === "darwin";

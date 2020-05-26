@@ -9,8 +9,8 @@
     "build": "rollup files.js --name files --output.format esm | uglifyjs -o files.min.js && npm run size",
     "size": "echo $(gzip -c files.min.js | wc -c) bytes",
     "pretest": "npm run build",
-    "test": "jest --coverage",
-    "watch": "jest --watchAll"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll"
   },
   "keywords": [
     "files",
@@ -38,11 +38,11 @@
     "swear": "^1.1.0"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-jest": "^21.2.0",
-    "babel-preset-env": "^1.7.0",
-    "jest": "^23.5.0",
+    "jest": "^25.5.4",
     "rollup": "^1.1.2",
     "uglify-es": "^3.3.9"
+  },
+  "jest": {
+    "testEnvironment": "jest-environment-node"
   }
 }
