@@ -1,6 +1,6 @@
 environment:
   matrix:
-    - nodejs_version: "14.0"
+    - nodejs_version: "14.3"
 cache:
   - node_modules
 install:
