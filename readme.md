@@ -36,6 +36,7 @@ All of the methods **return a promise** ([using `swear`](#swear-package)):
 |--------------------|--------------------------------------------------------|
 |[abs()](#abs)       |retrieve the absolute path of the path                  |
 |[cat()](#cat)*      |*alias* of [`read()`](#read)                            |
+|[copy()](#copy)     |copy a file while keeping the original                  |
 |[dir()](#dir)       |get the directory of the path                           |
 |[exists()](#exists) |check whenever a file or folder exists                  |
 |[home()](#home)     |get the home directory                                  |
@@ -43,10 +44,13 @@ All of the methods **return a promise** ([using `swear`](#swear-package)):
 |[list()](#list)     |list all of the files and folders of the path           |
 |[ls()](#list)*      |*alias* of [`.list()`](#list)                           |
 |[mkdir()](#mkdir)   |create the specified directory                          |
+|[move()](#move)     |copy a file while removing the original                 |
 |[name()](#name)     |get the filename of the path                            |
 |[read()](#read)     |read the file from the specified path                   |
 |[remove()](#remove) |remove a file or folder (recursively)                   |
+|[rename()](#rename) |*alias* of [`.move()`](#move)                           |
 |[stat()](#stat)     |get some information about the current file             |
+|[swear()](#swear)   |the promise wrapper that we use internally              |
 |[tmp()](#tmp)       |find the temporary directory or a folder inside         |
 |[walk()](#walk)     |recursively list all of the files and folders           |
 |[write()](#write)   |create a new file or put data into a file               |
@@ -99,7 +103,7 @@ It will return the same string if the path is already absolute.
 
 You can pass a second parameter to specify any base directory different from the executing environment:
 
-```js
+```jsx
 // cd ~/me/projects/files && node ./demo/abs.js
 
 // default; Relative to the place where the script is run
@@ -127,6 +131,30 @@ console.log(await ls('demo').map(abs));
 ### cat()
 
 > *alias* of [`read()`](#read).
+
+
+
+### copy()
+
+```js
+copy(source:string, destination:string) => :string
+```
+
+Copy the source file into the destination file, which can be in the same folder or in any other. It maintains the original. Returns the resulting file:
+
+```js
+// cd ~/projects/files && node index.js
+
+console.log(await copy('demo/README.md', 'demo/readme.md'));
+// /home/me/files/demo/readme.md
+
+console.log(await copy('demo/readme.md', 'demo/docs/readme.md'));
+// /home/me/files/demo/docs/readme.md
+```
+
+Related methods:
+
+- [move()](#move): copy a file while removing the original
 
 
 
@@ -296,6 +324,29 @@ Related methods:
 - [list()](#list): read all the contents of a directory.
 
 
+### move()
+
+```js
+move(source:string, destination:string) => :string
+```
+
+Put the source file into the destination file. This can be just a rename or actually changing the folder where the file lives. Returns the resulting file:
+
+```js
+// cd ~/projects/files && node index.js
+
+console.log(await move('demo/README.md', 'demo/readme.md'));
+// /home/me/files/demo/readme.md
+
+console.log(await move('demo/readme.md', 'demo/docs/readme.md'));
+// /home/me/files/demo/docs/readme.md
+```
+
+Related methods:
+
+- [copy()](#copy): copy a file while keeping the original
+
+
 
 ### name()
 
@@ -370,6 +421,12 @@ console.log(await remove('~/old-project'));
 ```
 
 Please be careful when using this, since there is no way of recovering deleted files.
+
+
+
+### rename()
+
+> *alias* of [`move()`](#move).
 
 
 
@@ -491,3 +548,5 @@ Create a new file or put data into a file that already exists. Returns the path 
 console.log(await write('demo.txt', 'Hello!').then(read));
 // 'Hello!'
 ```
+
+If the folder of the target file doesn't exist it will create it.

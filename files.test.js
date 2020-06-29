@@ -2,6 +2,7 @@
 import {
   abs,
   cat,
+  copy,
   dir,
   exists,
   home,
@@ -9,6 +10,7 @@ import {
   list,
   ls,
   mkdir,
+  move,
   name,
   remove,
   read,
@@ -16,7 +18,7 @@ import {
   stat,
   tmp,
   walk,
-  write
+  write,
 } from ".";
 
 // Native file system and path
@@ -85,6 +87,38 @@ describe("cat", () => {
 
   it("is empty if it is not a file", async () => {
     expect(await cat(swear("demo"))).toBe("");
+  });
+});
+
+describe("copy", () => {
+  const src = "demo/a/readme.md";
+
+  // Create and destroy it for each test
+  it("copy the file maintaining the original", async () => {
+    const dst = "demo/abc.md";
+    await remove(dst);
+    expect(await exists(src)).toBe(true);
+    expect(await exists(dst)).toBe(false);
+
+    const res = await copy(src, dst);
+    expect(await exists(src)).toBe(true);
+    expect(await exists(dst)).toBe(true);
+    expect(res).toBe(await abs(dst));
+    await remove(dst);
+  });
+
+  it("copy the file into a nestedd structure", async () => {
+    const dst = "demo/copy/readme.md";
+    await remove(dst);
+
+    expect(await exists(src)).toBe(true);
+    expect(await exists(dst)).toBe(false);
+
+    const res = await copy(src, dst);
+    expect(await exists(src)).toBe(true);
+    expect(await exists(dst)).toBe(true);
+    expect(res).toBe(await abs(dst));
+    await remove("demo/copy");
   });
 });
 
@@ -190,10 +224,10 @@ describe("join", () => {
 
 describe("mkdir", () => {
   beforeEach(async () =>
-    promisify(fs.rmdir)(await abs("demo/b")).catch(err => {})
+    promisify(fs.rmdir)(await abs("demo/b")).catch((err) => {})
   );
   afterEach(async () =>
-    promisify(fs.rmdir)(await abs("demo/b")).catch(err => {})
+    promisify(fs.rmdir)(await abs("demo/b")).catch((err) => {})
   );
 
   it("create a new directory", async () => {
@@ -217,6 +251,50 @@ describe("mkdir", () => {
     expect(await exists("demo/c/d/e")).toBe(true);
     expect(res).toBe(await abs("demo/c/d/e"));
     await remove("demo/c");
+  });
+});
+
+describe("move", () => {
+  const src = "demo/move.txt";
+
+  // Create and destroy it for each test
+  beforeEach(() => write(src, "hello"));
+  afterEach(() => remove(src));
+
+  it("can simply move a file", async () => {
+    const dst = "demo/move-zzz.txt";
+    expect(await exists(dst)).toBe(false);
+
+    const res = await move(src, dst);
+    expect(await exists(src)).toBe(false);
+    expect(await exists(dst)).toBe(true);
+    expect(res).toBe(await abs(dst));
+    await remove(dst);
+  });
+
+  it("can work with nested folders", async () => {
+    const dst = "demo/move/zzz.txt";
+    expect(await exists(dst)).toBe(false);
+
+    const res = await move(src, dst);
+    expect(await exists(src)).toBe(false);
+    expect(await exists(dst)).toBe(true);
+    expect(res).toBe(await abs(dst));
+    await remove("demo/move");
+  });
+
+  it("works with folders", async () => {
+    const src = "demo/move";
+    const dst = "demo/moved";
+
+    await write("demo/move/test.txt", "hello");
+    expect(await exists(dst)).toBe(false);
+
+    const res = await move(src, dst);
+    expect(await exists(src)).toBe(false);
+    expect(await exists(dst)).toBe(true);
+    expect(res).toBe(await abs(dst));
+    await remove(dst);
   });
 });
 
@@ -355,16 +433,14 @@ describe("tmp", () => {
       expect(await tmp("demo").then(ls)).toEqual(["/tmp/demo/a"]);
     } else if (mac()) {
       expect(await tmp("demo").then(ls)).toEqual([
-        (await cmd("echo $TMPDIR")) + "demo/a"
+        (await cmd("echo $TMPDIR")) + "demo/a",
       ]);
     } else {
       expect(await tmp("demo").then(ls)).toEqual([
-        "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\demo\\a"
+        "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\demo\\a",
       ]);
     }
-    await tmp("demo")
-      .then(remove)
-      .then(mkdir);
+    await tmp("demo").then(remove).then(mkdir);
     expect(await tmp("demo").then(ls)).toEqual([]);
   });
 });
@@ -396,10 +472,10 @@ describe("walk", () => {
 
 describe("write", () => {
   beforeEach(async () =>
-    promisify(fs.unlink)(await abs("demo/deleteme.md")).catch(err => {})
+    promisify(fs.unlink)(await abs("demo/deleteme.md")).catch((err) => {})
   );
   afterEach(async () =>
-    promisify(fs.unlink)(await abs("demo/deleteme.md")).catch(err => {})
+    promisify(fs.unlink)(await abs("demo/deleteme.md")).catch((err) => {})
   );
 
   it("creates a new file", async () => {
@@ -423,7 +499,7 @@ describe("other tests", () => {
 
   it("can walk and filter and map", async () => {
     const files = await walk("demo")
-      .filter(file => /readme\.md$/.test(file))
+      .filter((file) => /readme\.md$/.test(file))
       .map(read);
 
     expect(files).toContain("# Sub-sub-level\n");

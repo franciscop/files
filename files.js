@@ -29,13 +29,22 @@ const abs = swear(async (name = ".", base = process.cwd()) => {
 
 // Read the contents of a single file
 const readFile = promisify(fs.readFile);
-const cat = swear(async name => {
+const cat = swear(async (name) => {
   name = await abs(name);
-  return readFile(name, "utf-8").catch(err => "");
+  return readFile(name, "utf-8").catch((err) => "");
+});
+
+const copyAsync = promisify(fs.copyFile);
+const copy = swear(async (src, dst) => {
+  src = await abs(src);
+  dst = await abs(dst);
+  await mkdir(dir(dst));
+  await copyAsync(src, dst);
+  return dst;
 });
 
 // Get the directory from path
-const dir = swear(async name => {
+const dir = swear(async (name) => {
   name = await abs(name);
   return path.dirname(name);
 });
@@ -44,9 +53,9 @@ const dir = swear(async name => {
 const existsAsync = promisify(fs.exists);
 // Need to catch since for some reason, sometimes promisify() will not work
 //   properly and will return the first boolean arg of exists() as an error
-const exists = swear(async name => {
+const exists = swear(async (name) => {
   name = await abs(name);
-  return existsAsync(name).catch(res => res);
+  return existsAsync(name).catch((res) => res);
 });
 
 // Get the home directory: https://stackoverflow.com/a/9081436/938236
@@ -57,17 +66,17 @@ const join = swear((...parts) => abs(path.join(...parts)));
 
 // List all the files in the folder
 const readDir = promisify(fs.readdir);
-const list = swear(async dir => {
+const list = swear(async (dir) => {
   dir = await abs(dir);
   const files = await readDir(dir);
-  return swear(files).map(file => abs(file, dir));
+  return swear(files).map((file) => abs(file, dir));
 });
 
 // Create a new directory in the specified path
 // Note: `recursive` flag on Node.js is ONLY for Mac and Windows (not Linux), so
 // it's totally worthless for us
 const mkdirAsync = promisify(fs.mkdir);
-const mkdir = swear(async name => {
+const mkdir = swear(async (name) => {
   name = await abs(name);
 
   // Create a recursive list of paths to create, from the highest to the lowest
@@ -79,18 +88,27 @@ const mkdir = swear(async name => {
   // Build each nested path sequentially
   for (let path of list) {
     if (await exists(path)) continue;
-    await mkdirAsync(path).catch(err => {});
+    await mkdirAsync(path).catch((err) => {});
   }
   return name;
 });
 
+const renameAsync = promisify(fs.rename);
+const move = swear(async (src, dst) => {
+  src = await abs(src);
+  dst = await abs(dst);
+  await mkdir(dir(dst));
+  await renameAsync(src, dst);
+  return dst;
+});
+
 // Get the path's filename
-const name = swear(file => path.basename(file));
+const name = swear((file) => path.basename(file));
 
 // Delete a file or directory (recursively)
 const removeDirAsync = promisify(fs.rmdir);
 const removeFileAsync = promisify(fs.unlink);
-const remove = swear(async name => {
+const remove = swear(async (name) => {
   name = await abs(name);
   if (name === "/") throw new Error("Cannot remove the root folder `/`");
   if (!(await exists(name))) return name;
@@ -98,9 +116,9 @@ const remove = swear(async name => {
   if (await stat(name).isDirectory()) {
     // Remove all content recursively
     await list(name).map(remove);
-    await removeDirAsync(name).catch(err => {});
+    await removeDirAsync(name).catch((err) => {});
   } else {
-    await removeFileAsync(name).catch(err => {});
+    await removeFileAsync(name).catch((err) => {});
   }
   return name;
 });
@@ -109,22 +127,22 @@ const sep = path.sep;
 
 // Get some interesting info from the path
 const statAsync = promisify(fs.lstat);
-const stat = swear(async name => {
+const stat = swear(async (name) => {
   name = await abs(name);
-  return statAsync(name).catch(err => {});
+  return statAsync(name).catch((err) => {});
 });
 
 // Get a temporary folder
-const tmp = swear(async path => {
+const tmp = swear(async (path) => {
   path = await abs(path, tmpdir());
   return mkdir(path);
 });
 
 // Perform a recursive walk
-const rWalk = name => {
+const rWalk = (name) => {
   const file = abs(name);
 
-  const deeper = async file => {
+  const deeper = async (file) => {
     if (await stat(file).isDirectory()) {
       return rWalk(file);
     }
@@ -138,15 +156,13 @@ const rWalk = name => {
 };
 
 // Attempt to make an OS walk, and fallback to the recursive one
-const walk = swear(async name => {
+const walk = swear(async (name) => {
   name = await abs(name);
   if (!(await exists(name))) return [];
   if (linux() || mac()) {
     try {
       // Attempt to invoke run (command may fail for large directories)
-      return await run(`find ${name} -type f`)
-        .split("\n")
-        .filter(Boolean);
+      return await run(`find ${name} -type f`).split("\n").filter(Boolean);
     } catch (error) {
       // Fall back to rWalk() below
     }
@@ -158,6 +174,7 @@ const walk = swear(async name => {
 const writeFile = promisify(fs.writeFile);
 const write = swear(async (name, body = "") => {
   name = await abs(name);
+  await mkdir(dir(name));
   await writeFile(name, body, "utf-8");
   return name;
 });
@@ -165,6 +182,7 @@ const write = swear(async (name, body = "") => {
 const files = {
   abs,
   cat,
+  copy,
   dir,
   exists,
   home,
@@ -172,6 +190,7 @@ const files = {
   list,
   ls: list,
   mkdir,
+  move,
   name,
   read: cat,
   remove,
@@ -180,12 +199,13 @@ const files = {
   swear,
   tmp,
   walk,
-  write
+  write,
 };
 
 export {
   abs,
   cat,
+  copy,
   dir,
   exists,
   home,
@@ -193,6 +213,7 @@ export {
   list,
   list as ls,
   mkdir,
+  move,
   name,
   cat as read,
   remove,
@@ -201,7 +222,7 @@ export {
   swear,
   tmp,
   walk,
-  write
+  write,
 };
 
 export default files;
