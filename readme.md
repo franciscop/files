@@ -26,12 +26,6 @@ Files is a better `fs` filesystem:
 
 It's an ideal library if you have to build scripts with many file and folder operations since it's made to simplify those.
 
-
-
-## Documentation
-
-All of the methods **return a promise** ([using `swear`](#swear-package)):
-
 |function            |description                                             |
 |--------------------|--------------------------------------------------------|
 |[abs()](#abs)       |retrieve the absolute path of the path                  |
@@ -59,7 +53,7 @@ All of the methods **return a promise** ([using `swear`](#swear-package)):
 
 
 
-### Swear package
+## Swear package
 
 All of the methods [follow the `swear`](https://github.com/franciscop/swear) promise extension. These are fully compatible with native promises:
 
@@ -81,7 +75,7 @@ See how we applied the `.filter()` straight into the output of `list()`. Then we
 
 
 
-### abs()
+## abs()
 
 ```js
 abs(path:string, root=process.cwd():string) => :string
@@ -128,13 +122,13 @@ console.log(await ls('demo').map(abs));
 
 
 
-### cat()
+## cat()
 
 > *alias* of [`read()`](#read).
 
 
 
-### copy()
+## copy()
 
 ```js
 copy(source:string, destination:string) => :string
@@ -158,7 +152,7 @@ Related methods:
 
 
 
-### dir()
+## dir()
 
 ```js
 dir(path:string) => :string
@@ -182,7 +176,7 @@ console.log(await dir('~/hello/'));
 
 
 
-### exists()
+## exists()
 
 ```js
 exists(path:string) => :boolean
@@ -216,7 +210,7 @@ console.log(await swear(['a.md', 'b.md']).filter(exists));
 
 
 
-### home()
+## home()
 
 ```js
 home(arg1:string, arg2:string, ...) => :string
@@ -247,7 +241,7 @@ console.log(dir);
 
 
 
-### join()
+## join()
 
 ```js
 join(arg1:string, arg2:string, ...) => :string
@@ -262,7 +256,7 @@ console.log(await join('demo', 'a'));
 
 
 
-### list()
+## list()
 
 ```js
 list(path=process.cwd():string) => :Array(:string)
@@ -296,13 +290,13 @@ Related methods:
 
 
 
-### ls()
+## ls()
 
 *alias* of [`.list()`](#list)
 
 
 
-### mkdir()
+## mkdir()
 
 ```js
 mkdir(path:string) => :string
@@ -324,7 +318,7 @@ Related methods:
 - [list()](#list): read all the contents of a directory.
 
 
-### move()
+## move()
 
 ```js
 move(source:string, destination:string) => :string
@@ -348,7 +342,7 @@ Related methods:
 
 
 
-### name()
+## name()
 
 ```js
 name(path:string) => :string
@@ -363,7 +357,7 @@ console.log(await name('~/hello/world.js'));
 
 
 
-### read()
+## read()
 
 ```js
 read(path:string) => :string
@@ -404,7 +398,7 @@ console.log(await walk().filter(/\.md$/).map(read)));
 
 
 
-### remove()
+## remove()
 
 ```js
 remove(path:string) => :string
@@ -424,7 +418,7 @@ Please be careful when using this, since there is no way of recovering deleted f
 
 
 
-### rename()
+## rename()
 
 > *alias* of [`move()`](#move).
 
@@ -457,7 +451,7 @@ console.log(await stat('readme.md').atime);
 
 
 
-### swear()
+## swear()
 
 ```js
 swear(arg:any) => :any
@@ -480,7 +474,7 @@ console.log(await swear(['a.md', 'b.md']).filter(exists).map(read));
 ```
 
 
-### tmp()
+## tmp()
 
 ```js
 tmp(arg1:string) => :string
@@ -511,7 +505,7 @@ console.log(dir);
 
 
 
-### walk()
+## walk()
 
 ```js
 walk(path:string) => :Array(:string)
@@ -535,7 +529,7 @@ console.log(await walk('demo').filter(file => /\.md$/.test(file)).map(read));
 
 
 
-### write()
+## write()
 
 ```js
 write(path:string, content:string) => :string
