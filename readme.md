@@ -424,7 +424,7 @@ Please be careful when using this, since there is no way of recovering deleted f
 
 
 
-### stat()
+## stat()
 
 ```ts
 stat(path:string) => :Object({
