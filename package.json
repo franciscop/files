@@ -1,12 +1,14 @@
 {
   "name": "files",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Filesystem API easily usable with Promises and arrays",
   "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
   "homepage": "https://github.com/franciscop/files#readme",
   "bugs": "https://github.com/franciscop/files/issues",
   "repository": "github:franciscop/files",
-  "funding": "https://www.paypal.me/franciscopresencia/19",
+  "funding": {
+    "url": "https://www.paypal.me/franciscopresencia/19"
+  },
   "license": "MIT",
   "scripts": {
     "start": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll",
