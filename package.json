@@ -3,14 +3,14 @@
   "version": "2.1.0",
   "description": "Filesystem API easily usable with Promises and arrays",
   "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
+  "homepage": "https://github.com/franciscop/files#readme",
+  "bugs": "https://github.com/franciscop/files/issues",
+  "repository": "github:franciscop/files",
   "funding": "https://www.paypal.me/franciscopresencia/19",
   "license": "MIT",
   "scripts": {
-    "build": "rollup files.js --name files --output.format esm | uglifyjs -o files.min.js",
-    "size": "echo $(gzip -c files.min.js | wc -c) bytes",
-    "pretest": "npm run build",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll"
+    "start": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [
     "files",
@@ -19,31 +19,16 @@
     "promise",
     "promises",
     "async",
-    "await",
-    "all"
+    "await"
   ],
   "files": [],
-  "main": "files.min.js",
+  "main": "files.js",
   "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/franciscop/files.git"
-  },
-  "bugs": {
-    "url": "https://github.com/franciscop/files/issues"
-  },
-  "homepage": "https://github.com/franciscop/files#readme",
   "dependencies": {
     "atocha": "^1.0.1",
     "swear": "^1.1.0"
   },
   "devDependencies": {
-    "jest": "^25.5.4",
-    "rollup": "^1.1.2",
-    "uglify-es": "^3.3.9"
-  },
-  "jest": {
-    "transform": {},
-    "testEnvironment": "jest-environment-node"
+    "jest": "^26.0.0"
   }
 }
