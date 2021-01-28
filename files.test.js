@@ -88,6 +88,12 @@ describe("cat", () => {
   it("is empty if it is not a file", async () => {
     expect(await cat(swear("demo"))).toBe("");
   });
+
+  it("can json parse it", async () => {
+    expect(await cat("demo/test.json").then(JSON.parse)).toEqual({
+      hello: "world",
+    });
+  });
 });
 
 describe("copy", () => {

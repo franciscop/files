@@ -6,9 +6,7 @@
   "homepage": "https://github.com/franciscop/files#readme",
   "bugs": "https://github.com/franciscop/files/issues",
   "repository": "github:franciscop/files",
-  "funding": {
-    "url": "https://www.paypal.me/franciscopresencia/19"
-  },
+  "funding": "https://www.paypal.me/franciscopresencia/19",
   "license": "MIT",
   "scripts": {
     "start": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watchAll",

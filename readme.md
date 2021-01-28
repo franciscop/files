@@ -366,6 +366,9 @@ Read the specified file contents into a string:
 ```js
 console.log(await read('readme.md'));
 // # files ...
+
+console.log(await read('data.json').then(JSON.parse));
+// { hello: "world" }
 ```
 
 File reads are relative as always to the executing script. It expects a single argument so you can easily put an array on it:
@@ -375,14 +378,12 @@ File reads are relative as always to the executing script. It expects a single a
 console.log(await Promise.all(['a.md', 'b.md'].map(read)));
 // ['# A', '# B']
 
-// Read all markdown files in all subfolders:
-const allFiles = await walk();
-const mdFiles = allFiles.filter(file => /\.md$/.test(file));
-console.log(await Promise.all(mdFiles.map(read)));
+// Read all markdown files in all subfolders (using Swear interface):
+console.log(await walk('demo').filter(/\.md$/).map(read));
 // ['# A', '# B', ...]
 ```
 
-It also follows the `swear` specification, so you can perform any normal string operations on it:
+It also follows the [`swear` specification](#swear-package), so you can chain normal string operations on it:
 
 ```js
 // Find all the secondary headers in a markdown file
