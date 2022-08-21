@@ -13,6 +13,7 @@ import {
   move,
   name,
   remove,
+  rename,
   read,
   sep,
   stat,
@@ -368,6 +369,50 @@ describe("remove", () => {
   it("will ignore a non-existing file", async () => {
     expect(await exists("demo/d")).toBe(false);
     await expect(await remove("demo/d")).toEqual(await abs("demo/d"));
+  });
+});
+
+describe("rename", () => {
+  const src = "demo/rename.txt";
+
+  // Create and destroy it for each test
+  beforeEach(() => write(src, "hello"));
+  afterEach(() => remove(src));
+
+  it("can simply move a file", async () => {
+    const dst = "demo/rename-zzz.txt";
+    expect(await exists(dst)).toBe(false);
+
+    const res = await rename(src, dst);
+    expect(await exists(src)).toBe(false);
+    expect(await exists(dst)).toBe(true);
+    expect(res).toBe(await abs(dst));
+    await remove(dst);
+  });
+
+  it("can work with nested folders", async () => {
+    const dst = "demo/rename/zzz.txt";
+    expect(await exists(dst)).toBe(false);
+
+    const res = await rename(src, dst);
+    expect(await exists(src)).toBe(false);
+    expect(await exists(dst)).toBe(true);
+    expect(res).toBe(await abs(dst));
+    await remove("demo/rename");
+  });
+
+  it("works with folders", async () => {
+    const src = "demo/rename";
+    const dst = "demo/renamed";
+
+    await write("demo/rename/test.txt", "hello");
+    expect(await exists(dst)).toBe(false);
+
+    const res = await rename(src, dst);
+    expect(await exists(src)).toBe(false);
+    expect(await exists(dst)).toBe(true);
+    expect(res).toBe(await abs(dst));
+    await remove(dst);
   });
 });
 
