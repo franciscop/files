@@ -75,6 +75,12 @@ describe("abs", () => {
     expect(await abs("demo", 5)).toBe(await join(__dirname, "/demo"));
     expect(await abs("demo", true)).toBe(await join(__dirname, "/demo"));
   });
+
+  it("works with home", async () => {
+    expect(await abs("~/")).toBe(await home());
+    expect(await abs("~/hello")).toBe((await home()) + "/hello");
+    expect(await abs("~/hello/")).toBe((await home()) + "/hello/");
+  });
 });
 
 describe("cat", () => {
@@ -210,6 +216,7 @@ describe("home", () => {
   const homeDir = unix() ? "echo $HOME" : "echo %systemdrive%%homepath%";
   it("uses the home directory", async () => {
     expect(await home()).toEqual(await cmd(homeDir));
+    // expect((await home()).slice(-1)).toBe('/');
   });
 
   it("works with swear()", async () => {

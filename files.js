@@ -18,6 +18,11 @@ const abs = swear(async (name = ".", base = process.cwd()) => {
   // Absolute paths do not need more absolutism
   if (path.isAbsolute(name)) return name;
 
+  if (name.slice(0, 2) === "~/") {
+    base = await home();
+    name = name.slice(2);
+  }
+
   // We are off-base here; recover the viable base option
   if (!base || typeof base !== "string") {
     base = process.cwd();
