@@ -43,16 +43,6 @@ const unix = () => mac() || linux();
 
 const root = linux() ? "/home/" : mac() ? "/Users/" : "C:\\projects";
 
-const fake = async (obj, key, value, cb) => {
-  const init = obj[key];
-  Object.defineProperty(obj, key, { value, writable: true });
-  try {
-    return await cb();
-  } finally {
-    Object.defineProperty(obj, key, { value: init, writable: true });
-  }
-};
-
 describe("abs", () => {
   it("gets the defaults right", async () => {
     expect(await abs()).toBe(__dirname);
@@ -454,8 +444,10 @@ describe("tmp", () => {
       expect(await tmp()).toBe("/tmp");
     } else if (mac()) {
       expect((await tmp()) + "/").toBe(await cmd("echo $TMPDIR"));
-    } else {
+    } else if (windows()) {
       expect(await tmp()).toBe("C:\\Users\\appveyor\\AppData\\Local\\Temp\\1");
+    } else {
+      console.log("Platform not supported officially");
     }
   });
 
@@ -464,10 +456,12 @@ describe("tmp", () => {
       expect(await tmp(swear("demo"))).toBe("/tmp/demo");
     } else if (mac()) {
       expect(await tmp("demo")).toBe((await cmd("echo $TMPDIR")) + "demo");
-    } else {
+    } else if (windows()) {
       expect(await tmp("demo")).toBe(
         "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\demo"
       );
+    } else {
+      console.log("Platform not supported officially");
     }
   });
 
@@ -476,10 +470,12 @@ describe("tmp", () => {
       expect(await tmp("demo")).toBe("/tmp/demo");
     } else if (mac()) {
       expect(await tmp("demo")).toBe((await cmd("echo $TMPDIR")) + "demo");
-    } else {
+    } else if (windows()) {
       expect(await tmp("demo")).toBe(
         "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\demo"
       );
+    } else {
+      console.log("Platform not supported officially");
     }
   });
 
@@ -493,10 +489,12 @@ describe("tmp", () => {
       expect(await tmp("demo").then(ls)).toEqual([
         (await cmd("echo $TMPDIR")) + "demo/a",
       ]);
-    } else {
+    } else if (windows()) {
       expect(await tmp("demo").then(ls)).toEqual([
         "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\demo\\a",
       ]);
+    } else {
+      console.log("Platform not supported officially");
     }
     await tmp("demo").then(remove).then(mkdir);
     expect(await tmp("demo").then(ls)).toEqual([]);

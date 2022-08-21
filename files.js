@@ -100,11 +100,20 @@ const mkdir = swear(async (name) => {
 
 const renameAsync = promisify(fs.rename);
 const move = swear(async (src, dst) => {
-  src = await abs(src);
-  dst = await abs(dst);
-  await mkdir(dir(dst));
-  await renameAsync(src, dst);
-  return dst;
+  try {
+    src = await abs(src);
+    dst = await abs(dst);
+    await mkdir(dir(dst));
+    await renameAsync(src, dst);
+    return dst;
+  } catch (error) {
+    if (error.code === "EXDEV") {
+      await copy(src, dst);
+      await remove(src);
+    } else {
+      throw error;
+    }
+  }
 });
 
 // Get the path's filename
