@@ -25,8 +25,8 @@
   "main": "files.js",
   "type": "module",
   "dependencies": {
-    "atocha": "^1.0.1",
-    "swear": "^1.1.0"
+    "atocha": "^2.0.0",
+    "swear": "^1.1.2"
   },
   "devDependencies": {
     "jest": "^28.1.3"
