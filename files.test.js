@@ -360,7 +360,19 @@ describe("remove", () => {
   });
 
   it("cannot remove the root", async () => {
-    await expect(remove("/")).rejects.toThrow(/remove the root/);
+    if (typeof Bun !== "undefined") {
+      // TODO: this seems buggy upstream in Bun
+      await expect(
+        new Promise((done, fail) =>
+          remove("/").then(
+            (val) => done(() => val),
+            (err) => fail(() => err)
+          )
+        )
+      ).rejects.toThrow(/remove the root/);
+    } else {
+      await expect(remove("/")).rejects.toThrow(/remove the root/);
+    }
   });
 
   it("will ignore a non-existing file", async () => {
