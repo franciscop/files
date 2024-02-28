@@ -1,3 +1,13 @@
+// Native file system and path
+import fs from "fs";
+import path from "path";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import { promisify } from "util";
+
+import cmd from "atocha";
+import swear from "swear";
+
 // fs-promises
 import {
   abs,
@@ -12,25 +22,15 @@ import {
   mkdir,
   move,
   name,
+  read,
   remove,
   rename,
-  read,
   sep,
   stat,
   tmp,
   walk,
   write,
 } from ".";
-
-// Native file system and path
-import fs from "fs";
-import path from "path";
-import swear from "swear";
-import cmd from "atocha";
-import { promisify } from "util";
-
-import { fileURLToPath } from "url";
-import { dirname } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

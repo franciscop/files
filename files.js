@@ -1,10 +1,11 @@
 // The best filesystem for promises and array manipulation
 import fs from "fs";
-import path from "path";
 import { homedir, tmpdir } from "os";
+import path from "path";
 import { promisify } from "util";
-import swear from "swear";
+
 import run from "atocha";
+import swear from "swear";
 
 // Find whether it's Linux or Mac, where we can use `find`
 const mac = () => process.platform === "darwin";
