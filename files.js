@@ -112,8 +112,9 @@ const move = swear(async (src, dst) => {
 const name = swear((file) => path.basename(file));
 
 // Read the contents of a single file
-const read = swear(async (name, { type = "text" } = {}) => {
+const read = swear(async (name, options = {}) => {
   name = await abs(name);
+  const type = options && options.type ? options.type : "text";
   if (type === "text") {
     return fsp.readFile(name, "utf-8").catch(() => null);
   }

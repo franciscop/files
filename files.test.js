@@ -341,6 +341,10 @@ describe("read", () => {
       hello: "world",
     });
   });
+
+  it("can read a dir", async () => {
+    expect(await list("demo/a").map(read)).toEqual([null, "# Sub-level\n"]);
+  });
 });
 
 describe("remove", () => {
