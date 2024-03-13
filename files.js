@@ -1,10 +1,10 @@
 // The best filesystem for promises and array manipulation
-import fs from "fs";
-import { homedir, tmpdir } from "os";
-import path from "path";
-import { promisify } from "util";
-
 import run from "atocha";
+import fs from "node:fs";
+import fsp from "node:fs/promises";
+import { homedir, tmpdir } from "node:os";
+import path from "node:path";
+import { Readable } from "node:stream";
 import swear from "swear";
 
 // Find whether it's Linux or Mac, where we can use `find`
@@ -33,35 +33,27 @@ const abs = swear(async (name = ".", base = process.cwd()) => {
   return join(base, name);
 });
 
-// Read the contents of a single file
-const readFile = promisify(fs.readFile);
-const cat = swear(async (name) => {
-  name = await abs(name);
-  return readFile(name, "utf-8").catch((err) => "");
-});
-
-const copyAsync = promisify(fs.copyFile);
 const copy = swear(async (src, dst) => {
   src = await abs(src);
   dst = await abs(dst);
   await mkdir(dir(dst));
-  await copyAsync(src, dst);
+  await fsp.copyFile(src, dst);
   return dst;
 });
 
 // Get the directory from path
-const dir = swear(async (name) => {
+const dir = swear(async (name = ".") => {
   name = await abs(name);
   return path.dirname(name);
 });
 
 // Check whether a filename exists or not
-const existsAsync = promisify(fs.exists);
-// Need to catch since for some reason, sometimes promisify() will not work
-//   properly and will return the first boolean arg of exists() as an error
 const exists = swear(async (name) => {
   name = await abs(name);
-  return existsAsync(name).catch((res) => res);
+  return fsp.access(name).then(
+    () => true,
+    () => false
+  );
 });
 
 // Get the home directory: https://stackoverflow.com/a/9081436/938236
@@ -71,17 +63,14 @@ const home = swear((...args) => join(homedir(), ...args).then(mkdir));
 const join = swear((...parts) => abs(path.join(...parts)));
 
 // List all the files in the folder
-const readDir = promisify(fs.readdir);
 const list = swear(async (dir) => {
   dir = await abs(dir);
-  const files = await readDir(dir);
-  return swear(files).map((file) => abs(file, dir));
+  return swear(fsp.readdir(dir)).map((file) => abs(file, dir));
 });
 
 // Create a new directory in the specified path
 // Note: `recursive` flag on Node.js is ONLY for Mac and Windows (not Linux), so
 // it's totally worthless for us
-const mkdirAsync = promisify(fs.mkdir);
 const mkdir = swear(async (name) => {
   name = await abs(name);
 
@@ -94,23 +83,25 @@ const mkdir = swear(async (name) => {
   // Build each nested path sequentially
   for (let path of list) {
     if (await exists(path)) continue;
-    await mkdirAsync(path).catch((err) => {});
+    await fsp.mkdir(path).catch(() => null);
   }
   return name;
 });
 
-const renameAsync = promisify(fs.rename);
 const move = swear(async (src, dst) => {
   try {
     src = await abs(src);
     dst = await abs(dst);
     await mkdir(dir(dst));
-    await renameAsync(src, dst);
+    await fsp.rename(src, dst);
     return dst;
   } catch (error) {
+    // Some OS/environments don't allow move, so copy it first
+    // and then remove the original
     if (error.code === "EXDEV") {
       await copy(src, dst);
       await remove(src);
+      return dst;
     } else {
       throw error;
     }
@@ -120,9 +111,28 @@ const move = swear(async (src, dst) => {
 // Get the path's filename
 const name = swear((file) => path.basename(file));
 
+// Read the contents of a single file
+const read = swear(async (name, { type = "text" } = {}) => {
+  name = await abs(name);
+  if (type === "text") {
+    return fsp.readFile(name, "utf-8").catch(() => null);
+  }
+  if (type === "json") {
+    return read(name).then(JSON.parse);
+  }
+  if (type === "raw" || type === "buffer") {
+    return fsp.readFile(name).catch(() => null);
+  }
+  if (type === "stream" || type === "web" || type === "webStream") {
+    const file = await fsp.open(name);
+    return file.readableWebStream();
+  }
+  if (type === "node" || type === "nodeStream") {
+    return fs.createReadStream(name);
+  }
+});
+
 // Delete a file or directory (recursively)
-const removeDirAsync = promisify(fs.rmdir);
-const removeFileAsync = promisify(fs.unlink);
 const remove = swear(async (name) => {
   name = await abs(name);
   if (name === "/") throw new Error("Cannot remove the root folder `/`");
@@ -131,9 +141,9 @@ const remove = swear(async (name) => {
   if (await stat(name).isDirectory()) {
     // Remove all content recursively
     await list(name).map(remove);
-    await removeDirAsync(name).catch((err) => {});
+    await fsp.rmdir(name).catch(() => null);
   } else {
-    await removeFileAsync(name).catch((err) => {});
+    await fsp.unlink(name).catch(() => null);
   }
   return name;
 });
@@ -141,15 +151,14 @@ const remove = swear(async (name) => {
 const sep = path.sep;
 
 // Get some interesting info from the path
-const statAsync = promisify(fs.lstat);
 const stat = swear(async (name) => {
   name = await abs(name);
-  return statAsync(name).catch((err) => {});
+  return fsp.lstat(name).catch(() => null);
 });
 
 // Get a temporary folder
-const tmp = swear(async (path) => {
-  path = await abs(path, tmpdir());
+const tmp = swear(async (...args) => {
+  const path = await join(tmpdir(), ...args);
   return mkdir(path);
 });
 
@@ -186,28 +195,37 @@ const walk = swear(async (name) => {
 });
 
 // Create a new file with the specified contents
-const writeFile = promisify(fs.writeFile);
 const write = swear(async (name, body = "") => {
   name = await abs(name);
+  // If it's a WebStream, convert it to a normal node stream
+  if (body && body.pipeTo) {
+    body = Readable.fromWeb(body);
+  }
+  if (
+    body &&
+    typeof body !== "string" &&
+    !body.pipe &&
+    !(body instanceof Buffer)
+  ) {
+    body = JSON.stringify(body);
+  }
   await mkdir(dir(name));
-  await writeFile(name, body, "utf-8");
+  await fsp.writeFile(name, body, "utf-8");
   return name;
 });
 
 const files = {
   abs,
-  cat,
   copy,
   dir,
   exists,
   home,
   join,
   list,
-  ls: list,
   mkdir,
   move,
   name,
-  read: cat,
+  read,
   remove,
   rename: move,
   sep,
@@ -220,18 +238,16 @@ const files = {
 
 export {
   abs,
-  cat,
   copy,
   dir,
   exists,
   home,
   join,
   list,
-  list as ls,
   mkdir,
   move,
   name,
-  cat as read,
+  read,
   remove,
   move as rename,
   sep,

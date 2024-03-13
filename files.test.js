@@ -2,6 +2,7 @@
 import fs from "fs";
 import path from "path";
 import { dirname } from "path";
+import { Readable } from "stream";
 import { fileURLToPath } from "url";
 import { promisify } from "util";
 
@@ -11,14 +12,12 @@ import swear from "swear";
 // fs-promises
 import {
   abs,
-  cat,
   copy,
   dir,
   exists,
   home,
   join,
   list,
-  ls,
   mkdir,
   move,
   name,
@@ -73,26 +72,6 @@ describe("abs", () => {
   });
 });
 
-describe("cat", () => {
-  it("can read a markdown file", async () => {
-    expect(await cat("demo/readme.md")).toContain("# Hello!");
-  });
-
-  it("works with swear()", async () => {
-    expect(await cat(swear("demo/readme.md"))).toContain("# Hello!");
-  });
-
-  it("is empty if it is not a file", async () => {
-    expect(await cat(swear("demo"))).toBe("");
-  });
-
-  it("can json parse it", async () => {
-    expect(await cat("demo/test.json").then(JSON.parse)).toEqual({
-      hello: "world",
-    });
-  });
-});
-
 describe("copy", () => {
   const src = "demo/a/readme.md";
 
@@ -110,7 +89,7 @@ describe("copy", () => {
     await remove(dst);
   });
 
-  it("copy the file into a nestedd structure", async () => {
+  it("copy the file into a nested structure", async () => {
     const dst = "demo/copy/readme.md";
     await remove(dst);
 
@@ -168,18 +147,18 @@ describe("dir", () => {
 
 describe("list", () => {
   it("defaults to the current folder", async () => {
-    expect(await list()).toContain(__dirname + sep + "files.js");
+    expect(await list()).toContain(__dirname + sep + "package.json");
   });
 
   it("works with swear()", async () => {
     expect(await list(swear(process.cwd()))).toContain(
-      __dirname + sep + "files.js"
+      __dirname + sep + "package.json"
     );
   });
 
   it("can load the demo", async () => {
     const files = await list("demo", __dirname);
-    expect(files).not.toContain(__dirname + sep + "files.js");
+    expect(files).not.toContain(__dirname + sep + "package.json");
     expect(files).toContain(__dirname + sep + `demo${sep}a`);
     expect(files).toContain(__dirname + sep + `demo${sep}readme.md`);
   });
@@ -318,10 +297,56 @@ describe("name", () => {
   });
 });
 
+describe("read", () => {
+  it("can read a markdown file", async () => {
+    expect(await read("demo/readme.md")).toContain("# Hello!");
+  });
+
+  it("can webstream read it", async () => {
+    const stream = await read("demo/readme.md", { type: "web" });
+    const enc = new TextDecoder("utf-8");
+    let str = "";
+    for await (const chunk of stream) {
+      str += enc.decode(chunk);
+    }
+    expect(str).toContain("# Hello!");
+  });
+
+  it("can nodestream read it", async () => {
+    const stream = await read("demo/readme.md", { type: "node" });
+    const enc = new TextDecoder("utf-8");
+    let str = "";
+    for await (const chunk of stream) {
+      str += enc.decode(chunk);
+    }
+    expect(str).toContain("# Hello!");
+  });
+
+  it("works with swear()", async () => {
+    expect(await read(swear("demo/readme.md"))).toContain("# Hello!");
+  });
+
+  it("is empty if it is not a file", async () => {
+    expect(await read(swear("demo"))).toBe(null);
+  });
+
+  it("can auto-parse json", async () => {
+    expect(await read("demo/test.json", { type: "json" })).toEqual({
+      hello: "world",
+    });
+  });
+
+  it("can json parse it", async () => {
+    expect(await read("demo/test.json").then(JSON.parse)).toEqual({
+      hello: "world",
+    });
+  });
+});
+
 describe("remove", () => {
   it("removes a file", async () => {
     await write("demo/remove.md", "Hello!");
-    expect(await cat("demo/remove.md")).toBe("Hello!");
+    expect(await read("demo/remove.md")).toBe("Hello!");
     const file = await remove("demo/remove.md");
     expect(await exists("demo/remove.md")).toBe(false);
     expect(file).toBe(await abs("demo/remove.md"));
@@ -339,7 +364,7 @@ describe("remove", () => {
     await mkdir("demo/b");
     await write("demo/b/remove.md", "Hello!");
     expect(await exists("demo/b")).toBe(true);
-    expect(await cat("demo/b/remove.md")).toBe("Hello!");
+    expect(await read("demo/b/remove.md")).toBe("Hello!");
     const file = await remove("demo/b");
     expect(await exists("demo/b")).toBe(false);
     expect(file).toBe(await abs("demo/b"));
@@ -351,9 +376,9 @@ describe("remove", () => {
     await mkdir("demo/x/c");
     await write("demo/x/c/remove.md", "Hello!");
     expect(await exists("demo/x")).toBe(true);
-    expect(await cat("demo/x/remove.md")).toBe("Hello!");
+    expect(await read("demo/x/remove.md")).toBe("Hello!");
     expect(await exists("demo/x/c")).toBe(true);
-    expect(await cat("demo/x/c/remove.md")).toBe("Hello!");
+    expect(await read("demo/x/c/remove.md")).toBe("Hello!");
     const file = await remove("demo/x");
     expect(await exists("demo/x")).toBe(false);
     expect(file).toBe(await abs("demo/x"));
@@ -493,34 +518,34 @@ describe("tmp", () => {
 
   it("can reset the doc", async () => {
     await tmp("demo").then(remove);
-    expect(await tmp("demo").then(ls)).toEqual([]);
+    expect(await tmp("demo").then(list)).toEqual([]);
     mkdir(await tmp("demo/a"));
     if (linux()) {
-      expect(await tmp("demo").then(ls)).toEqual(["/tmp/demo/a"]);
+      expect(await tmp("demo").then(list)).toEqual(["/tmp/demo/a"]);
     } else if (mac()) {
-      expect(await tmp("demo").then(ls)).toEqual([
+      expect(await tmp("demo").then(list)).toEqual([
         (await cmd("echo $TMPDIR")) + "demo/a",
       ]);
     } else if (windows()) {
-      expect(await tmp("demo").then(ls)).toEqual([
+      expect(await tmp("demo").then(list)).toEqual([
         "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\demo\\a",
       ]);
     } else {
       console.log("Platform not supported officially");
     }
     await tmp("demo").then(remove).then(mkdir);
-    expect(await tmp("demo").then(ls)).toEqual([]);
+    expect(await tmp("demo").then(list)).toEqual([]);
   });
 });
 
 describe("walk", () => {
   it("defaults to the current directory", async () => {
-    expect(await walk()).toContain(__dirname + sep + "files.js");
+    expect(await walk()).toContain(__dirname + sep + "package.json");
   });
 
   it("works with swear()", async () => {
     expect(await walk(swear(process.cwd()))).toContain(
-      __dirname + sep + "files.js"
+      __dirname + sep + "package.json"
     );
   });
 
@@ -549,7 +574,44 @@ describe("write", () => {
   it("creates a new file", async () => {
     expect(await exists("demo/deleteme.md")).toBe(false);
     await write("demo/deleteme.md", "Hello!");
-    expect(await cat("demo/deleteme.md")).toBe("Hello!");
+    expect(await read("demo/deleteme.md")).toBe("Hello!");
+    expect(await exists("demo/deleteme.md")).toBe(true);
+  });
+
+  it("creates a new file from JSON", async () => {
+    expect(await exists("demo/deleteme.md")).toBe(false);
+    await write("demo/deleteme.md", { hello: "world" });
+    expect(await read("demo/deleteme.md")).toBe('{"hello":"world"}');
+    expect(await exists("demo/deleteme.md")).toBe(true);
+  });
+
+  it("creates a new file from a buffer", async () => {
+    expect(await exists("demo/deleteme.md")).toBe(false);
+    await write("demo/deleteme.md", Buffer.from("Hello!", "utf8"));
+    expect(await read("demo/deleteme.md")).toBe("Hello!");
+    expect(await exists("demo/deleteme.md")).toBe(true);
+  });
+
+  it("creates a new file from a Readable", async () => {
+    expect(await exists("demo/deleteme.md")).toBe(false);
+    const stream = new Readable();
+    stream.push("Hello!"); // the string you want
+    stream.push(null); // indicates end-of-file basically - the end of the stream
+    await write("demo/deleteme.md", stream);
+    expect(await read("demo/deleteme.md")).toBe("Hello!");
+    expect(await exists("demo/deleteme.md")).toBe(true);
+  });
+
+  it("creates a new file from a ReadableStream", async () => {
+    expect(await exists("demo/deleteme.md")).toBe(false);
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue("Hello!");
+        controller.close();
+      },
+    });
+    await write("demo/deleteme.md", stream);
+    expect(await read("demo/deleteme.md")).toBe("Hello!");
     expect(await exists("demo/deleteme.md")).toBe(true);
   });
 
@@ -562,7 +624,7 @@ describe("write", () => {
 
 describe("other tests", () => {
   it("can combine async inside another methods", async () => {
-    expect(await ls(tmp("demo/x"))).toEqual([]);
+    expect(await list(tmp("demo/x"))).toEqual([]);
   });
 
   it("can walk and filter and map", async () => {
