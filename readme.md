@@ -327,7 +327,7 @@ console.log(await name("~/hello/world.js"));
 ## read()
 
 ```js
-read(path:string, { type: 'string' }) => :string
+read(path:string, { type: 'text' }) => :string
 ```
 
 Read the specified file contents into a string:
@@ -340,7 +340,13 @@ console.log(await read("data.json").then(JSON.parse));
 // { hello: "world" }
 ```
 
-You can specify other types: `raw`, `json`, `web` (WebStream) and `node` (NodeStreams):
+You can specify other types:
+
+- `text` (default): get the file as a plain string, useful for e.g. `.csv`, `.txt`, `.md`, `.html`, etc.
+- `raw` (Buffer): put the whole file into a Buffer, which is useful for raw file manipulation (like with [sharp](https://sharp.pixelplumbing.com/)) or binary delivery.
+- `json` (JSON.parse): reads the data as a string, and parses it with `JSON.parse()`.
+- `web` (WebStream): create a new WebStream, which allows for further processing with e.g. `fetch()`.
+- `node` (NodeStreams): create a traditional Node.js Stream, which allows for chunked processing with other Node.js utilities.
 
 ```js
 console.log(await read("data.json", { type: 'json' });
@@ -510,8 +516,12 @@ Create a new file or put data into a file that already exists. Returns the path 
 // Write to a file and then read its contents
 console.log(await write("demo.txt", "Hello!").then(read));
 // 'Hello!'
+
+// Write it as a webstream
+const res = await fetch();
+await write("requested.txt", res.body);
 ```
 
 If the folder of the target file doesn't exist it will create it.
 
-It accepts multiple types for the contect, specifically it accepts `string`, `Buffer`, `ReadableStream` (WebStreams) and `Readable` (NodeStreams) or a serializable object/array that will be converted to JSON.
+It accepts multiple types for the contect, specifically it accepts `string`, `Buffer`, `ReadableStream` (WebStreams), `Readable` (NodeStreams) or a serializable object/array that will be converted to JSON.

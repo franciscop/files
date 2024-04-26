@@ -202,6 +202,8 @@ const write = swear(async (name, body = "") => {
   if (body && body.pipeTo) {
     body = Readable.fromWeb(body);
   }
+  // If it's a type that is not a string nor a stream, convert it
+  // into plain text with JSON.stringify
   if (
     body &&
     typeof body !== "string" &&
