@@ -488,7 +488,7 @@ Recursively list all of the files from the specified folder:
 
 ```js
 // Retrieve all files inside './demo'
-console.log(await walk("demo"));
+await walk("demo");
 // ['/home/me/projects/files/demo/readme.md', '/home/me/projects/files/demo/a/readme.md', ...]
 ```
 
@@ -496,13 +496,13 @@ It will _not_ return directories. You can then use `filter` to filter e.g. by fi
 
 ```js
 // Retrieve the content of all markdown files inside demo
-console.log(
-  await walk("demo")
-    .filter((file) => /\.md$/.test(file))
-    .map(read)
-);
+await walk("demo")
+  .filter(/\.md$/)
+  .map(read);
 // ['# Readme A', '# Me also', ...]
 ```
+
+Note: you could also apply the regex straight in the filter since we are using [swear](#swear).
 
 ## write()
 
@@ -514,12 +514,39 @@ Create a new file or put data into a file that already exists. Returns the path 
 
 ```js
 // Write to a file and then read its contents
-console.log(await write("demo.txt", "Hello!").then(read));
+const path = await write("demo.txt", "Hello!");
 // 'Hello!'
 
 // Write it as a webstream
 const res = await fetch();
 await write("requested.txt", res.body);
+```
+
+You can pass simple text to write it to the file, which will automatically be written as UTF-8:
+
+```js
+await write('demo.txt', 'Hello world');
+````
+
+You can also pass a Readable WebStream or a Node.js Stream:
+
+```js
+// Write it as a webstream
+const stream = new ReadableStream({
+  start(controller) {
+    controller.enqueue("Hello!");
+    controller.close();
+  },
+});
+
+await write("webstream.txt", stream);
+
+// Write it as a node stream:
+const stream = new Readable();
+stream.push("Hello!"); // the string you want
+stream.push(null); // indicates end-of-file basically - the end of the stream
+
+await write("demo/deleteme.md", stream);
 ```
 
 If the folder of the target file doesn't exist it will create it.

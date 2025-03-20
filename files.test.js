@@ -54,7 +54,7 @@ describe("abs", () => {
 
   it("get the absolute path of the passed args", async () => {
     expect(await abs("demo", process.cwd())).toBe(
-      await join(__dirname, "/demo")
+      await join(__dirname, "/demo"),
     );
     expect(await abs("demo", __dirname)).toBe(await join(__dirname, "/demo"));
   });
@@ -118,19 +118,19 @@ describe("dir", () => {
 
   it("works with swear()", async () => {
     expect(await dir(swear("demo/a/b/readme.md"))).toContain(
-      `files${sep}demo${sep}a${sep}b`
+      `files${sep}demo${sep}a${sep}b`,
     );
   });
 
   it("can put the full folder path", async () => {
     expect(await dir("demo/a/b/readme.md")).toContain(
-      `files${sep}demo${sep}a${sep}b`
+      `files${sep}demo${sep}a${sep}b`,
     );
     expect(await dir(dir("demo/a/b/readme.md"))).not.toContain(
-      `files${sep}demo${sep}a${sep}b`
+      `files${sep}demo${sep}a${sep}b`,
     );
     expect(await dir(dir(dir("demo/a/b/readme.md")))).not.toContain(
-      `files${sep}demo${sep}a`
+      `files${sep}demo${sep}a`,
     );
   });
 
@@ -140,7 +140,7 @@ describe("dir", () => {
         .replace(/(\/|\\)$/, "")
         .split(sep)
         .slice(0, -1)
-        .join(sep)
+        .join(sep),
     );
   });
 });
@@ -152,7 +152,7 @@ describe("list", () => {
 
   it("works with swear()", async () => {
     expect(await list(swear(process.cwd()))).toContain(
-      __dirname + sep + "package.json"
+      __dirname + sep + "package.json",
     );
   });
 
@@ -200,17 +200,17 @@ describe("join", () => {
 
   it("works with swear()", async () => {
     expect(await join(swear(__dirname), swear("demo"))).toBe(
-      path.join(__dirname, "demo")
+      path.join(__dirname, "demo"),
     );
   });
 });
 
 describe("mkdir", () => {
   beforeEach(async () =>
-    promisify(fs.rmdir)(await abs("demo/b")).catch((err) => {})
+    promisify(fs.rmdir)(await abs("demo/b")).catch((err) => {}),
   );
   afterEach(async () =>
-    promisify(fs.rmdir)(await abs("demo/b")).catch((err) => {})
+    promisify(fs.rmdir)(await abs("demo/b")).catch((err) => {}),
   );
 
   it("create a new directory", async () => {
@@ -389,19 +389,7 @@ describe("remove", () => {
   });
 
   it("cannot remove the root", async () => {
-    if (typeof Bun !== "undefined") {
-      // TODO: this seems buggy upstream in Bun
-      await expect(
-        new Promise((done, fail) =>
-          remove("/").then(
-            (val) => done(() => val),
-            (err) => fail(() => err)
-          )
-        )
-      ).rejects.toThrow(/remove the root/);
-    } else {
-      await expect(remove("/")).rejects.toThrow(/remove the root/);
-    }
+    await expect(remove("/")).rejects.toThrow(/remove the root/);
   });
 
   it("will ignore a non-existing file", async () => {
@@ -499,7 +487,7 @@ describe("tmp", () => {
       expect(await tmp("demo")).toBe((await cmd("echo $TMPDIR")) + "demo");
     } else if (windows()) {
       expect(await tmp("demo")).toBe(
-        "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\demo"
+        "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\demo",
       );
     } else {
       console.log("Platform not supported officially");
@@ -513,7 +501,7 @@ describe("tmp", () => {
       expect(await tmp("demo")).toBe((await cmd("echo $TMPDIR")) + "demo");
     } else if (windows()) {
       expect(await tmp("demo")).toBe(
-        "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\demo"
+        "C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\demo",
       );
     } else {
       console.log("Platform not supported officially");
@@ -544,12 +532,20 @@ describe("tmp", () => {
 
 describe("walk", () => {
   it("defaults to the current directory", async () => {
-    expect(await walk()).toContain(__dirname + sep + "package.json");
+    const dest = __dirname + sep + "package.json";
+    expect(await walk()).toContain(dest);
+    expect(await walk(".")).toContain(dest);
+    expect(await walk(process.cwd())).toContain(dest);
+    expect(await walk(import.meta.dirname)).toContain(dest);
+  });
+
+  it("avoid double slashes when ending on '/'", async () => {
+    expect(await walk("./")).toContain(__dirname + sep + "package.json");
   });
 
   it("works with swear()", async () => {
     expect(await walk(swear(process.cwd()))).toContain(
-      __dirname + sep + "package.json"
+      __dirname + sep + "package.json",
     );
   });
 
@@ -562,17 +558,17 @@ describe("walk", () => {
     expect(files).toContain(__dirname + sep + `demo${sep}readme.md`);
     expect(files).toContain(__dirname + sep + `demo${sep}a${sep}readme.md`);
     expect(files).toContain(
-      __dirname + sep + `demo${sep}a${sep}b${sep}readme.md`
+      __dirname + sep + `demo${sep}a${sep}b${sep}readme.md`,
     );
   });
 });
 
 describe("write", () => {
   beforeEach(async () =>
-    promisify(fs.unlink)(await abs("demo/deleteme.md")).catch((err) => {})
+    promisify(fs.unlink)(await abs("demo/deleteme.md")).catch((err) => {}),
   );
   afterEach(async () =>
-    promisify(fs.unlink)(await abs("demo/deleteme.md")).catch((err) => {})
+    promisify(fs.unlink)(await abs("demo/deleteme.md")).catch((err) => {}),
   );
 
   it("creates a new file", async () => {
@@ -593,6 +589,13 @@ describe("write", () => {
     expect(await exists("demo/deleteme.md")).toBe(false);
     await write("demo/deleteme.md", Buffer.from("Hello!", "utf8"));
     expect(await read("demo/deleteme.md")).toBe("Hello!");
+    expect(await exists("demo/deleteme.md")).toBe(true);
+  });
+
+  it("can accept a promise", async () => {
+    expect(await exists("demo/deleteme.md")).toBe(false);
+    await write("demo/deleteme.md", read("demo/a/readme.md"));
+    expect(await read("demo/deleteme.md")).toBe("# Sub-level\n");
     expect(await exists("demo/deleteme.md")).toBe(true);
   });
 

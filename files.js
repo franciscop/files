@@ -52,7 +52,7 @@ const exists = swear(async (name) => {
   name = await abs(name);
   return fsp.access(name).then(
     () => true,
-    () => false
+    () => false,
   );
 });
 
@@ -186,6 +186,8 @@ const walk = swear(async (name) => {
   if (!(await exists(name))) return [];
   if (linux() || mac()) {
     try {
+      // Avoid double forward slash when it ends in "/"
+      name = name.replace(/\/$/, "");
       // Attempt to invoke run (command may fail for large directories)
       return await run(`find ${name} -type f`).split("\n").filter(Boolean);
     } catch (error) {
@@ -201,6 +203,9 @@ const write = swear(async (name, body = "") => {
   // If it's a WebStream, convert it to a normal node stream
   if (body && body.pipeTo) {
     body = Readable.fromWeb(body);
+  }
+  if (body && body.then) {
+    body = await body;
   }
   // If it's a type that is not a string nor a stream, convert it
   // into plain text with JSON.stringify
