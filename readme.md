@@ -515,7 +515,6 @@ Create a new file or put data into a file that already exists. Returns the path 
 ```js
 // Write to a file and then read its contents
 const path = await write("demo.txt", "Hello!");
-// 'Hello!'
 
 // Write it as a webstream
 const res = await fetch();
