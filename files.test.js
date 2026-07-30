@@ -6,6 +6,8 @@ import { Readable } from "stream";
 import { fileURLToPath } from "url";
 import { promisify } from "util";
 
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+
 import cmd from "atocha";
 import swear from "swear";
 
@@ -241,8 +243,12 @@ describe("move", () => {
   const src = "demo/move.txt";
 
   // Create and destroy it for each test
-  beforeEach(() => write(src, "hello"));
-  afterEach(() => remove(src));
+  beforeEach(async () => {
+    await write(src, "hello");
+  });
+  afterEach(async () => {
+    await remove(src);
+  });
 
   it("can simply move a file", async () => {
     const dst = "demo/move-zzz.txt";
@@ -343,7 +349,8 @@ describe("read", () => {
   });
 
   it("can read a dir", async () => {
-    expect(await list("demo/a").map(read)).toEqual([null, "# Sub-level\n"]);
+    const files = await list("demo/a").map(read);
+    expect(files.sort()).toEqual([null, "# Sub-level\n"].sort());
   });
 });
 
@@ -389,7 +396,7 @@ describe("remove", () => {
   });
 
   it("cannot remove the root", async () => {
-    await expect(remove("/")).rejects.toThrow(/remove the root/);
+    await expect(async () => remove("/")).toThrow(/remove the root/);
   });
 
   it("will ignore a non-existing file", async () => {
@@ -402,8 +409,12 @@ describe("rename", () => {
   const src = "demo/rename.txt";
 
   // Create and destroy it for each test
-  beforeEach(() => write(src, "hello"));
-  afterEach(() => remove(src));
+  beforeEach(async () => {
+    await write(src, "hello");
+  });
+  afterEach(async () => {
+    await remove(src);
+  });
 
   it("can simply move a file", async () => {
     const dst = "demo/rename-zzz.txt";
