@@ -1,4 +1,4 @@
-# 📁 Files [![files](https://img.shields.io/npm/v/files?label=files&color=greenlime)](https://www.npmjs.com/package/files) [![tests](https://github.com/franciscop/files/workflows/tests/badge.svg)](https://github.com/franciscop/files/actions)
+# 📁 Files [![npm install files](https://img.shields.io/badge/npm%20install-files-blue.svg)](https://www.npmjs.com/package/files) [![tests](https://github.com/franciscop/files/workflows/tests/badge.svg)](https://github.com/franciscop/files/actions)
 
 A flexible filesystem API for Node and Bun:
 
