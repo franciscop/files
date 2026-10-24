@@ -190,7 +190,7 @@ const walk = swear(async (name) => {
       name = name.replace(/\/$/, "");
       // Attempt to invoke run (command may fail for large directories)
       return await run(`find ${name} -type f`).split("\n").filter(Boolean);
-    } catch (error) {
+    } catch {
       // Fall back to rWalk() below
     }
   }
