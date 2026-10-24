@@ -125,8 +125,7 @@ const read = swear(async (name, options = {}) => {
     return fsp.readFile(name).catch(() => null);
   }
   if (type === "stream" || type === "web" || type === "webStream") {
-    const file = await fsp.open(name);
-    return file.readableWebStream();
+    return Readable.toWeb(fs.createReadStream(name));
   }
   if (type === "node" || type === "nodeStream") {
     return fs.createReadStream(name);

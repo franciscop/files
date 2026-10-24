@@ -23,6 +23,10 @@
   "main": "files.js",
   "type": "module",
   "types": "index.d.ts",
+  "files": [
+    "files.js",
+    "index.d.ts"
+  ],
   "dependencies": {
     "atocha": "^2.0.0",
     "swear": "^1.1.2"
@@ -33,9 +37,5 @@
     "check-dts": "^0.7.2",
     "oxlint": "^1.89.0",
     "typescript": "5.9"
-  },
-  "files": [
-    "files.js",
-    "index.d.ts"
-  ]
+  }
 }
