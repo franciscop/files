@@ -1,6 +1,6 @@
 {
   "name": "files",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Filesystem API easily usable with Promises and arrays",
   "repository": "github:franciscop/files",
   "author": "Francisco Presencia <public@francisco.io> (https://francisco.io/)",
